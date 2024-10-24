@@ -57,6 +57,7 @@ Ejecuta el .exe correspondiente del proyecto. Los ejecutables se encuentran en l
 ### Paso 2. Ejecutar AirSim con ROS desde WSL:
 Abre la consola de WSL (buscando "Ubuntu-20.04" en el menú de Windows) y ejecuta los siguientes comandos:
 ```bash
+cd AirSim/ros
 source devel/setup.bash
 roslaunch airsim_ros_pkgs airsim_node.launch output:=screen host:=$WSL_HOST_IP
 ```
