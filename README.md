@@ -8,6 +8,7 @@
 ```bash
 wsl --install -d Ubuntu-20.04
 ```
+Te pedirá introducir un usuario y contraseña de UNIX. 
 
 ### Paso 2. Instalar ROS Noetic en Ubuntu:
 - Abre Ubuntu-20.04 desde el menú de aplicaciones de Windows.
