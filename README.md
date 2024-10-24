@@ -44,7 +44,7 @@ export WSL_HOST_IP=$(ip route | grep default | awk '{print $3}')
 ```
 ### Paso 4. Crear la configuración de AirSim:
 - Crea una carpeta llamada AirSim en C:\Users\username\Documents.
-- Copia tu archivo settings.json en esa carpeta.
+- Copia el archivo settings.json del repositorio en esa carpeta.
 - Modifica settings.json si es necesario, teniendo cuidado con los cambios, ya que aquí puedes ajustar sensores y otras configuraciones del vehículo.
 
 ---
