@@ -4,7 +4,7 @@ En la siguiente explicación he sido a veces un poco repetitivo, pero es para ac
 ## Paso 1. Instalación del paquete:
 Importante haber hecho previamente lo explicado en el README.md principal de este repositorio.
 
-1. Hacer "git clone https://github.com/JoseLopez36/ProyectoCPR/tree/main" en la carpeta donde se quiera descargar el repo en local.
+1. Hacer "git clone https://github.com/JoseLopez36/ProyectoCPR/tree/main" en la carpeta donde se quiera descargar el repo en local. Si diera problemas, que no lo sé, se podría borrar este archivo README.md en el repo local.
 2. Meter "proyecto_cpr" (osea el paquete), que está dentro del repo, en el sistema de archivos de Linux en: /root/AirSim/ros/src. Aquí es donde en principio vamos a modificar el paquete añadiendo nodos y tal.
 3. Abrir la ventana de comandos de Ubuntu, ir a /root/Airsim/ros y ejecutar:
 ```bash
