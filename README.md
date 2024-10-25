@@ -69,6 +69,8 @@ cd AirSim/ros
 source devel/setup.bash
 roslaunch airsim_ros_pkgs airsim_node.launch output:=screen host:=$WSL_HOST_IP
 ```
+Por si no lo sabéis, el segundo comando de los anteriores es recomendable hacerlo después de cada "catkin_make".
+
 ### Opcional
 ```bash
 roslaunch airsim_ros_pkgs rviz.launch
