@@ -1,0 +1,28 @@
+<launch>
+
+    <!-- Incluir el archivo de lanzamiento de otro paquete -->
+    <include file="$(find airsim_ros_pkgs)/launch/airsim_node.launch">
+        <arg name="output" value="screen"/> 
+        <arg name="host" value="$(env WSL_HOST_IP)"/> <!-- Puedes pasar argumentos si el archivo incluido los espera -->
+    </include>
+
+    <include file="$(find airsim_ros_pkgs)/launch/rviz.launch">
+    </include>
+
+
+    <!-- Lanzar el nodo de control de tu paquete -->
+    <!-- <node pkg="proyecto_cpr" type="control_node" name="control_node" output="screen"> -->
+        <!-- <param name="control_param" value="value"/> --> <!-- Parámetros específicos de tu nodo -->
+    <!-- </node> -->
+
+    <!-- Lanzar el nodo de percepción -->
+    <!-- <node pkg="proyecto_cpr" type="perception_node" name="perception_node" output="screen"> -->
+        <!-- <param name="perception_param" value="value"/> --> <!-- Parámetros específicos de tu nodo -->
+    <!-- </node> -->
+
+    <!-- Lanzar el nodo de planificación -->
+    <!-- <node pkg="proyecto_cpr" type="planning_node" name="planning_node" output="screen"> -->
+        <!-- <param name="planning_param" value="value"/> --> <!-- Parámetros específicos de tu nodo -->
+    <!-- </node> -->
+
+</launch>
