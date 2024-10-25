@@ -43,6 +43,13 @@ cd ros
 catkin_make
 export WSL_HOST_IP=$(ip route | grep default | awk '{print $3}')
 ```
+### Paso 3.5. Mantener variable de entorno WSL_HOST_IP:
+Justo después de lo anterior ejecuta "echo $WSL_HOST_IP", copia la IP y haz:
+```bash
+echo "export WSL_HOST_IP=tu_ip_copiada" >> ~/.bashrc
+source ~/.bashrc
+```
+
 ### Paso 4. Crear la configuración de AirSim:
 - Crea una carpeta llamada AirSim en C:\Users\username\Documents.
 - Copia el archivo settings.json del repositorio en esa carpeta.
