@@ -9,7 +9,16 @@ project(proyecto_cpr)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  rospy
   std_msgs
+  actionlib
+  pcl_ros
+  cv_bridge
+  image_transport
+  nav_msgs
+  move_base
+  tf2_ros
+  geometry_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -104,7 +113,8 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES proyecto_cpr
-#  CATKIN_DEPENDS roscpp std_msgs
+#  CATKIN_DEPENDS roscpp rospy std_msgs actionlib pcl_ros cv_bridge image_transport nav_msgs move_base tf2_ros geometry_msgs
+
 #  DEPENDS system_lib
 )
 

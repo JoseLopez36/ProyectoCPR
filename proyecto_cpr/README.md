@@ -24,3 +24,10 @@ Importante tener en cuenta todo lo siguiente.
 Para ir actualizando este repositorio, cuando añadais y modifiqueis cosas en el paquete, como con los comandos de Git se sube todo lo modificado en la carpeta "ProyectoCPR" (osea el repo), tendréis que copiar la carpeta "proyecto_cpr" (osea el paquete) desde los archivos de Ubuntu y pegarla en la carpeta donde clonarais el repo en el Paso1 (reemplazando la versión sin modificar).
 
 Otra cosa muy importante es que CADA UNO TENDRÁ SU PROPIA RAMA A DONDE SUBIRÁ SUS AVANCES Y MODIFICACIONES. Por favor que nadie se equivoque y suba lo que haya cambiado a la rama principal o a la de otro, por si acaso.
+
+## Anotaciones:
+- Si al intentar "runear" un nodo/programa usando: rosrun proyecto_cpr listar_topics.py (por ejemplo); os da un error como "/usr/bin/env: ‘python3\r’: No such file or directory" (entiendo que en C++ podría ocurrir algo parecido), con el "\r" lo que dice es que los saltos de línea de Windows dan error al ejecutarlos en Linux, por lo que en la ventana de comandos, en la carpeta donde está el archivo debéis hacer:
+```bash
+sed -i 's/\r$//' listar_topics.py
+```
+
