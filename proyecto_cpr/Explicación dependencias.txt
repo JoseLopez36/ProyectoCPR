@@ -1,0 +1,42 @@
+Dependencias de Construcción (build_depend).
+Estas dependencias son necesarias durante la fase de compilación del paquete.
+
+- catkin: Herramienta de construcción y marco de trabajo de ROS que facilita la configuración y compilación de paquetes. Permite gestionar dependencias entre paquetes, configurar rutas, etc.
+
+- roscpp: Cliente de ROS en C++. Permite crear nodos en C++ para comunicarse dentro del sistema ROS mediante mensajes y servicios.
+
+- rospy: Cliente de ROS en Python. Similar a roscpp, pero enfocado en scripts y nodos en Python.
+
+- std_msgs: Contiene mensajes estándar de ROS como enteros, cadenas, flotantes, etc. Son tipos de mensajes básicos que se pueden utilizar para el intercambio de datos entre nodos.
+
+- actionlib: Biblioteca de ROS para implementar la comunicación de acciones (acciones de largo plazo o tareas con feedback). Es útil para ejecutar tareas que pueden durar un tiempo indeterminado, como el movimiento hacia un objetivo con monitoreo constante.
+
+- pcl_ros: Paquete de ROS para manejar y procesar datos de nubes de puntos utilizando la biblioteca de Cloud Point Library (PCL). Es ideal para aplicaciones de percepción tridimensional y reconstrucción de entornos.
+
+- cv_bridge: Biblioteca de ROS para convertir datos de imagen entre ROS y OpenCV, el estándar en procesamiento de imágenes. Permite trabajar con imágenes de cámaras y sensores de AirSim.
+
+- image_transport: Biblioteca que optimiza el envío de imágenes a través de ROS, con opciones de compresión. Ayuda a reducir el uso de ancho de banda en aplicaciones de visión.
+
+- nav_msgs: Contiene mensajes para la navegación, como mapas de ocupación y trayectorias planificadas (path). Es útil en la planificación de rutas y en el mapeo del entorno.
+
+- move_base: Nodo de navegación en ROS que permite planificar y ejecutar movimientos del robot. Generalmente, se usa para tareas de navegación autónoma, como moverse hacia una posición específica.
+
+- tf2_ros: Sistema de transformación de coordenadas en ROS que ayuda a rastrear la posición y orientación de los diferentes marcos de referencia (como robot, cámara, entorno) en el tiempo.
+
+- geometry_msgs: Contiene mensajes para representar datos geométricos como vectores, puntos y poses (posiciones con orientación). Es esencial para trabajar con trayectorias, posiciones y movimientos en ROS.
+
+
+Dependencias de Ejecución (exec_depend).
+Estas dependencias son necesarias cuando el paquete se ejecuta (pero no necesariamente durante la compilación).
+
+- roscpp y rospy: Estos clientes de ROS en C++ y Python son necesarios también en tiempo de ejecución para que los nodos se ejecuten correctamente.
+
+- std_msgs y sensor_msgs: std_msgs es importante para los datos básicos de mensajes en ROS, mientras que sensor_msgs contiene mensajes que representan datos de sensores como cámaras, LIDAR, y GPS. Ambos son esenciales para la comunicación de sensores y dispositivos en tiempo de ejecución.
+
+- cv_bridge y image_transport: Estas bibliotecas son necesarias también en tiempo de ejecución para manipular y optimizar el manejo de imágenes en nodos de visión.
+
+- depth_image_proc: Procesador de imágenes de profundidad en ROS, útil para convertir y manejar datos de profundidad (3D) como los de cámaras estéreo o sensores de AirSim.
+
+- geometry_msgs: También requerido en tiempo de ejecución, ya que los datos de geometría son necesarios en nodos de control y planificación, para manejar las posiciones, orientaciones y vectores necesarios para la navegación y el movimiento del robot.
+
+Cada una de estas dependencias proporciona funcionalidades específicas que ayudan en tareas de control, percepción y planificación en el entorno de simulación de AirSim.
