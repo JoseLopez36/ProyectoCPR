@@ -25,11 +25,8 @@ RUN DEBIAN_FRONTEND=noninteractive /install_ros_deps.sh
 # Instalar dependencias adicionales de ROS
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
     ros-noetic-pcl-ros \
-
-    # *************** Anadir aqui mas paquetes ***************
-    
-    # ********************************************************
-
+    # *************** Anadir aqui mas paquetes *************** \   
+    # ******************************************************** \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
