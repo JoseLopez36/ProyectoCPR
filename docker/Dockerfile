@@ -5,6 +5,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
     apt-utils \
     apt-transport-https \
     software-properties-common \
+    net-tools \
+    iputils-ping \
     sudo \
     tzdata \
     && apt-get clean \
@@ -24,8 +26,10 @@ RUN DEBIAN_FRONTEND=noninteractive /install_ros_deps.sh
 
 # Instalar dependencias adicionales de ROS
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
+    ros-noetic-rviz \
+    # *************** PAQUETES DEL PROYECTO ****************** \   
     ros-noetic-pcl-ros \
-    # *************** Anadir aqui mas paquetes *************** \   
+    ros-noetic-move-base \
     # ******************************************************** \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*

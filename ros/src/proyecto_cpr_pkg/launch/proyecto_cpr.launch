@@ -3,7 +3,7 @@
     <!-- Incluir el archivo de lanzamiento de otro paquete -->
     <include file="$(find airsim_ros_pkgs)/launch/airsim_node.launch">
         <arg name="output" value="screen"/> 
-        <arg name="host" value="$(env WSL_HOST_IP)"/> <!-- Puedes pasar argumentos si el archivo incluido los espera -->
+        <arg name="host" value="172.17.0.1"/>
     </include>
 
     <include file="$(find airsim_ros_pkgs)/launch/rviz.launch">
