@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>proyecto_cpr</name>
+  <name>proyecto_cpr_pkg</name>
   <version>0.0.0</version>
   <description>Paquete para control, percepción y planificación en AirSim</description>
   <maintainer email="migtejgar@alum.us.es">Miguel</maintainer>

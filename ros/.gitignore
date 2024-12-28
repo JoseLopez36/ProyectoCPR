@@ -1,0 +1,9 @@
+# Ignorar archivos y carpetas generados
+build/
+devel/
+logs/
+*.swp
+*.pyc
+
+# Ignorar CMakeLists.txt de la carpeta src
+src/CMakeLists.txt
