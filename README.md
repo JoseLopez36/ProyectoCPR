@@ -58,9 +58,10 @@ Esto correrá el contenedor con la imagen construida anteriormente y montará el
 
 Una vez dentro del contenedor, procede a construir el workspace de ROS:
 ```bash
+cd ProyectoCPR
 external/AirSim/setup.sh
 external/AirSim/build.sh
-cd ProyectoCPR/ros
+cd ros
 catkin_make
 source devel/setup.bash
 ```
