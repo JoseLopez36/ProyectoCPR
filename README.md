@@ -1,79 +1,104 @@
 # ProyectoCPR
 
-# Instalación de AirSim con ROS en WSL2 (Ubuntu 20.04)
+## Instalación de AirSim junto a ROS en Docker (Ubuntu 20.04)
 
-## Instalación
+Este repositorio contiene los archivos necesarios para configurar un contenedor Docker que ejecute AirSim y ROS. A continuación, se describen los pasos para su instalación y puesta en marcha.
 
-### Paso 1. Instalar WSL con Ubuntu-20.04:
+### Prerequisitos
+
+1. **Docker Desktop**  
+   - [Descargar e instalar Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/)
+
+2. **Servidor gráfico para Windows (requerido para RViz)**  
+   - [Xming](http://www.straightrunning.com/XmingNotes/) (se recomiendan también las fuentes Xming-fonts)
+   - Asegúrate de tenerlo instalado y en ejecución antes de utilizar RViz.
+
+---
+
+### Paso 1. Clonar el repositorio
+
+Clona el repositorio y accede al directorio del proyecto.
 ```bash
-wsl --install -d Ubuntu-20.04
+git clone https://github.com/JoseLopez36/ProyectoCPR.git
+cd ProyectoCPR
 ```
-Te pedirá introducir un usuario y contraseña de UNIX. 
 
-### Paso 2. Instalar ROS Noetic en Ubuntu:
-- Abre Ubuntu-20.04 desde el menú de aplicaciones de Windows.
-- Ejecuta los siguientes comandos para instalar ROS Noetic:
-```bash
-sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
-curl -sSL 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xC1CF6E31E6BADE8868B172B4F42ED6FBAB17C654' | sudo apt-key add -
-sudo apt update
-sudo apt install -y ros-noetic-desktop python3-rosdep
-sudo rosdep init
-rosdep update
-echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
-source ~/.bashrc
-```
-#### Comprobación:
-Para verificar que ROS Noetic se ha instalado correctamente, ejecuta los siguientes comandos:
-```bash
-cd
-roscore
-```
-Si **roscore** se inicia correctamente, ROS Noetic está listo para usarse.
+### Paso 2. Construir la imagen Docker
 
-### Paso 3. Construir AirSim:
-Ejecuta los siguientes comandos para instalar dependencias y construir AirSim:
+Dentro del repositorio clonado, entra a la carpeta `docker` y construye la imagen Docker:
 ```bash
-sudo apt-get install ros-noetic-tf2-sensor-msgs ros-noetic-tf2-geometry-msgs ros-noetic-mavros*
-git clone https://github.com/Microsoft/AirSim.git
-cd AirSim
-./setup.sh
-./build.sh
-cd ros
+cd docker
+docker build -t airsim-ros -f Dockerfile .
+```
+Nota: Este paso puede tomar unos minutos.
+
+### Paso 3. Configurar la variable de entorno
+
+En Windows, crea la variable de entorno `CPR_PATH` con la ruta donde se haya clonado este repositorio.
+
+Por ejemplo:
+
+- Si clonaste el repositorio en `C:\Users\<tu-usuario>\Documents\ProyectoCPR`, entonces tu CPR_PATH deberá ser `C:\Users\<tu-usuario>\Documents\ProyectoCPR`.
+
+Para crear la variable de entorno en Windows:
+
+1. Presiona `Windows + R` y escribe `Sysdm.cpl`.
+2. Ve a `Avanzado > Variables de entorno`
+3. En Variables de sistema, crea una nueva variable con el nombre CPR_PATH y el valor con la ruta del repositorio.
+
+### Paso 4. Iniciar el contenedor
+
+Para iniciar el contenedor, desde el directorio raíz del proyecto:
+1. Ve a la carpeta docker.
+1. Haz doble click en el archivo `docker_run.bat`.
+
+Esto correrá el contenedor con la imagen construida anteriormente y montará el volumen correspondiente. Una vez esté corriendo, tendrás acceso a un shell dentro del contenedor. Este paso debe repetirse cada vez que se quiera iniciar el contenedor.
+
+### Paso 5. Construir el workspace de ROS
+
+Una vez dentro del contenedor, procede a construir el workspace de ROS:
+```bash
+external/AirSim/setup.sh
+external/AirSim/build.sh
+cd ProyectoCPR/ros
 catkin_make
-export WSL_HOST_IP=$(ip route | grep default | awk '{print $3}')
+source devel/setup.bash
 ```
-### Paso 3.5. Mantener variable de entorno WSL_HOST_IP:
-Justo después de lo anterior ejecuta "echo $WSL_HOST_IP", copia la IP y haz:
-```bash
-echo "export WSL_HOST_IP=tu_ip_copiada" >> ~/.bashrc
-source ~/.bashrc
-```
+Nota: Asegúrate de ejecutar source devel/setup.bash cada vez que abras un nuevo terminal dentro del contenedor para que las configuraciones de tu workspace estén disponibles.
 
-### Paso 4. Crear la configuración de AirSim:
-- Crea una carpeta llamada AirSim en C:\Users\username\Documents.
-- Copia el archivo settings.json del repositorio en esa carpeta.
-- Modifica settings.json si es necesario, teniendo cuidado con los cambios, ya que aquí puedes ajustar sensores y otras configuraciones del vehículo.
+### Paso 6. Configuración para usar RViz
+
+Para usar RViz en Windows, necesitas un servidor X. Se recomienda Xming:
+1. Descargar Xming y Xming-fonts de Public Domain Releases
+2. Instalar ambos paquetes.
+3. Ejecutar Xming antes de abrir RViz en el contenedor.
+
+---
+
+## Configuración de AirSim
+
+Para configurar AirSim es necesario disponer del archivo `settings.json`. A continuación se describe como configurarlo correctamente:
+1. Crea una carpeta llamada AirSim en C:\Users\<tu-usuario>\Documents.
+2. Copia el archivo settings.json del repositorio en esa carpeta.
+3. Modifica settings.json si es necesario. Aquí puedes ajustar sensores y otras configuraciones del vehículo (más información en https://microsoft.github.io/AirSim/settings/).
 
 ---
 
 ## Uso
 
+Para lanzar el proyecto se deben seguir los siguientes pasos:
+
 ### Paso 1. Lanzar el ejecutable del proyecto:
-Ejecuta el .exe correspondiente del proyecto. Los ejecutables se encuentran en los Releases del repositorio (se encuentra a la derecha de esta página).
+Ejecuta el .exe correspondiente del proyecto. Los distintos ejecutables se encuentran en los Releases del repositorio.
 
-### Paso 2. Ejecutar AirSim con ROS desde WSL:
-Abre la consola de WSL (buscando "Ubuntu-20.04" en el menú de Windows) y ejecuta los siguientes comandos:
+### Paso 2. Ejecutar AirSim con ROS desde el contenedor Docker:
+Abre el contenedor haciendo doble-click en `docker/docker_run.bat` y ejecuta los siguientes comandos:
 ```bash
-cd AirSim/ros
+cd ~/ProyectoCPR/ros
+catkin_make
 source devel/setup.bash
-roslaunch airsim_ros_pkgs airsim_node.launch output:=screen host:=$WSL_HOST_IP
+roslaunch airsim_ros_pkgs airsim_node.launch host:=<wsl-host-ip>
 ```
-Por si no lo sabéis, el segundo comando de los anteriores es recomendable hacerlo después de cada "catkin_make".
-
-### Opcional
-```bash
-roslaunch airsim_ros_pkgs rviz.launch
-```
+Nota: `wsl-host-ip` se puede obtener ejecutando ipconfig en la máquina host y copiando la IPv4 bajo el nombre `Ethernet adapter vEthernet (WSL (Hyper-V firewall))`.
 
 
