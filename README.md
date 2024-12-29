@@ -85,7 +85,7 @@ Para usar RViz en Windows, necesitas un servidor X. Se recomienda Xming:
 ## Configuración de AirSim
 
 Para configurar AirSim es necesario disponer del archivo `settings.json`. A continuación se describe como configurarlo correctamente:
-1. Crea una carpeta llamada AirSim en C:\Users\<tu-usuario>\Documents.
+1. Crea una carpeta llamada AirSim en C:\Users\{tu-usuario}\Documents.
 2. Copia el archivo settings.json del repositorio en esa carpeta.
 3. Modifica settings.json si es necesario. Aquí puedes ajustar sensores y otras configuraciones del vehículo (más información en https://microsoft.github.io/AirSim/settings/).
 
