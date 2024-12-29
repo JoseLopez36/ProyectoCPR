@@ -48,7 +48,7 @@ Para crear la variable de entorno en Windows:
 
 ### Paso 4. Iniciar el contenedor
 
-Para iniciar el contenedor, desde el directorio raíz del proyecto:
+Para iniciar el contenedor, arrancar Docker Desktop y desde el directorio raíz del proyecto:
 1. Ve a la carpeta docker.
 1. Haz doble click en el archivo `docker_run.bat`.
 
