@@ -38,3 +38,4 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
 # Configuración del entorno para ROS
 USER $UNAME
 WORKDIR /home/${UNAME}
+RUN echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
