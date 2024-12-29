@@ -101,7 +101,7 @@ Ejecuta el .exe correspondiente del proyecto. Los distintos ejecutables se encue
 
 ### Paso 2. Abrir contenedor Docker:
 
-Abre el contenedor haciendo doble-click en `tools/start_container.bat`. Si deseas abrir otro terminal para el mismo contenedor, ejecuta `tools/open_container_terminal.bat`. Si deseas cerrar el contenedor, ejecuta `docker_kill.bat`.
+Abre el contenedor haciendo doble-click en `tools/start_container.bat`. Si deseas abrir otro terminal para el mismo contenedor, ejecuta `tools/open_container_terminal.bat`. Si deseas cerrar el contenedor, ejecuta `tools/docker_kill.bat`.
 
 ### Paso 3. Configurar IP del Host:
 
