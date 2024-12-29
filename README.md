@@ -54,20 +54,26 @@ Para iniciar el contenedor, desde el directorio raíz del proyecto:
 
 Esto correrá el contenedor con la imagen construida anteriormente y montará el volumen correspondiente. Una vez esté corriendo, tendrás acceso a un shell dentro del contenedor. Este paso debe repetirse cada vez que se quiera iniciar el contenedor.
 
-### Paso 5. Construir el workspace de ROS
+### Paso 5. Construir AirSim
 
-Una vez dentro del contenedor, procede a construir el workspace de ROS:
+Una vez dentro del contenedor, construye AirSim:
 ```bash
-cd ProyectoCPR
-external/AirSim/setup.sh
-external/AirSim/build.sh
-cd ros
+cd ~/ProyectoCPR/external/AirSim
+./setup.sh
+./build.sh
+```
+
+### Paso 6. Construir el workspace de ROS
+
+A continuación, procede a construir el workspace de ROS:
+```bash
+cd ~/ProyectoCPR/ros
 catkin_make
 source devel/setup.bash
 ```
 Nota: Asegúrate de ejecutar source devel/setup.bash cada vez que abras un nuevo terminal dentro del contenedor para que las configuraciones de tu workspace estén disponibles.
 
-### Paso 6. Configuración para usar RViz
+### Paso 7. Configuración para usar RViz
 
 Para usar RViz en Windows, necesitas un servidor X. Se recomienda Xming:
 1. Descargar Xming y Xming-fonts de Public Domain Releases
