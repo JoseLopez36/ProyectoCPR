@@ -34,7 +34,6 @@ public:
     virtual void continueForFrames(uint32_t frames) override;
 
     virtual void setWind(const msr::airlib::Vector3r& wind) const override;
-    virtual void setExtForce(const msr::airlib::Vector3r& ext_force) const override;
 
 protected:
     void startAsyncUpdator();

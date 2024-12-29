@@ -40,7 +40,7 @@ ASimModeBase::ASimModeBase()
 
     static ConstructorHelpers::FClassFinder<APIPCamera> external_camera_class(TEXT("Blueprint'/AirSim/Blueprints/BP_PIPCamera'"));
     external_camera_class_ = external_camera_class.Succeeded() ? external_camera_class.Class : nullptr;
-    static ConstructorHelpers::FClassFinder<ACameraManager> camera_director_class(TEXT("Blueprint'/AirSim/Blueprints/BP_CameraDirector'"));
+    static ConstructorHelpers::FClassFinder<ACameraDirector> camera_director_class(TEXT("Blueprint'/AirSim/Blueprints/BP_CameraDirector'"));
     camera_director_class_ = camera_director_class.Succeeded() ? camera_director_class.Class : nullptr;
 
     static ConstructorHelpers::FObjectFinder<UParticleSystem> collision_display(TEXT("ParticleSystem'/AirSim/StarterContent/Particles/P_Explosion.P_Explosion'"));
@@ -226,10 +226,10 @@ void ASimModeBase::initializeTimeOfDay()
         static const FName sun_prop_name(TEXT("Directional light actor"));
         auto* p = sky_sphere_class_->FindPropertyByName(sun_prop_name);
 
-#if ((ENGINE_MAJOR_VERSION > 4) || (ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION >= 27))
+#if ENGINE_MINOR_VERSION > 24
         FObjectProperty* sun_prop = CastFieldChecked<FObjectProperty>(p);
 #else
-        FObjectProperty* sun_prop = Cast<FObjectProperty>(p);
+        UObjectProperty* sun_prop = Cast<UObjectProperty>(p);
 #endif
 
         UObject* sun_obj = sun_prop->GetObjectPropertyValue_InContainer(sky_sphere_);
@@ -310,13 +310,6 @@ void ASimModeBase::setWind(const msr::airlib::Vector3r& wind) const
     // should be overridden by derived class
     unused(wind);
     throw std::domain_error("setWind not implemented by SimMode");
-}
-
-void ASimModeBase::setExtForce(const msr::airlib::Vector3r& ext_force) const
-{
-    // should be overridden by derived class
-    unused(ext_force);
-    throw std::domain_error("setExtForce not implemented by SimMode");
 }
 
 std::unique_ptr<msr::airlib::ApiServerBase> ASimModeBase::createApiServer() const
@@ -446,13 +439,13 @@ const msr::airlib::AirSimSettings& ASimModeBase::getSettings() const
 void ASimModeBase::initializeCameraDirector(const FTransform& camera_transform, float follow_distance)
 {
     TArray<AActor*> camera_dirs;
-    UAirBlueprintLib::FindAllActor<ACameraManager>(this, camera_dirs);
+    UAirBlueprintLib::FindAllActor<ACameraDirector>(this, camera_dirs);
     if (camera_dirs.Num() == 0) {
         //create director
         FActorSpawnParameters camera_spawn_params;
         camera_spawn_params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
         camera_spawn_params.Name = "CameraDirector";
-        CameraDirector = this->GetWorld()->SpawnActor<ACameraManager>(camera_director_class_,
+        CameraDirector = this->GetWorld()->SpawnActor<ACameraDirector>(camera_director_class_,
                                                                        camera_transform,
                                                                        camera_spawn_params);
         CameraDirector->setFollowDistance(follow_distance);
@@ -464,7 +457,7 @@ void ASimModeBase::initializeCameraDirector(const FTransform& camera_transform, 
                                                                                   camera_spawn_params);
     }
     else {
-        CameraDirector = static_cast<ACameraManager*>(camera_dirs[0]);
+        CameraDirector = static_cast<ACameraDirector*>(camera_dirs[0]);
     }
 }
 
@@ -845,10 +838,11 @@ void ASimModeBase::drawLidarDebugPoints()
 
                         FVector uu_point;
 
-                        if (lidar->getParams().data_frame == AirSimSettings::LidarSetting::DataFrame::VehicleInertialFrame) {
+                        if (lidar->getParams().data_frame == AirSimSettings::kVehicleInertialFrame) {
                             uu_point = pawn_sim_api->getNedTransform().fromLocalNed(point);
                         }
-                        else if (lidar->getParams().data_frame == AirSimSettings::LidarSetting::DataFrame::SensorLocalFrame) {
+                        else if (lidar->getParams().data_frame == AirSimSettings::kSensorLocalFrame) {
+
                             Vector3r point_w = VectorMath::transformToWorldFrame(point, lidar_data.pose, true);
                             uu_point = pawn_sim_api->getNedTransform().fromLocalNed(point_w);
                         }

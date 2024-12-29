@@ -67,8 +67,6 @@ namespace airlib
         virtual void simPlotTransformsWithNames(const vector<Pose>& poses, const vector<std::string>& names, float tf_scale, float tf_thickness, float text_scale, const vector<float>& text_color_rgba, float duration) = 0;
 
         virtual std::vector<std::string> listSceneObjects(const std::string& name_regex) const = 0;
-        virtual std::vector<std::string> listSceneObjectsByTag(const std::string& tag_regex) const = 0;
-
         virtual Pose getObjectPose(const std::string& object_name) const = 0;
         virtual Vector3r getObjectScale(const std::string& object_name) const = 0;
         virtual bool setObjectPose(const std::string& object_name, const Pose& pose, bool teleport) = 0;
@@ -81,7 +79,6 @@ namespace airlib
         virtual vector<MeshPositionVertexBuffersResponse> getMeshPositionVertexBuffers() const = 0;
 
         virtual bool createVoxelGrid(const Vector3r& position, const int& x_size, const int& y_size, const int& z_size, const float& res, const std::string& output_file) = 0;
-        virtual Vector3r findLookAtRotation(const std::string& vehicle_name, const std::string& object_name) = 0;
 
         // Recording APIs
         virtual void startRecording() = 0;
@@ -89,7 +86,6 @@ namespace airlib
         virtual bool isRecording() const = 0;
 
         virtual void setWind(const Vector3r& wind) const = 0;
-        virtual void setExtForce(const Vector3r& ext_force) const = 0;
         virtual vector<string> listVehicles() const = 0;
 
         virtual std::string getSettingsString() const = 0;

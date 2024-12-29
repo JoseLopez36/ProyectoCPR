@@ -278,6 +278,7 @@ namespace airlib
             const auto& response = getWorldSimApi()->getDetections(type, CameraDetails(camera_name, vehicle_name, external));
             return RpcLibAdaptorsBase::DetectionInfo::from(response);
         });
+
         pimpl_->server.bind("reset", [&]() -> void {
             //Exit if already resetting.
             static bool resetInProgress;
@@ -362,10 +363,6 @@ namespace airlib
 
         pimpl_->server.bind("simListSceneObjects", [&](const std::string& name_regex) -> std::vector<string> {
             return getWorldSimApi()->listSceneObjects(name_regex);
-        });
-
-        pimpl_->server.bind("simListSceneObjectsByTag", [&](const std::string& tag_regex) -> std::vector<string> {
-            return getWorldSimApi()->listSceneObjectsByTag(tag_regex);
         });
 
         pimpl_->server.bind("simLoadLevel", [&](const std::string& level_name) -> bool {
@@ -504,21 +501,12 @@ namespace airlib
             getWorldSimApi()->setWind(wind.to());
         });
 
-        pimpl_->server.bind("simSetExtForce", [&](const RpcLibAdaptorsBase::Vector3r& ext_force) -> void {
-            getWorldSimApi()->setExtForce(ext_force.to());
-        });
-
         pimpl_->server.bind("listVehicles", [&]() -> vector<string> {
             return getWorldSimApi()->listVehicles();
         });
 
         pimpl_->server.bind("getSettingsString", [&]() -> std::string {
             return getWorldSimApi()->getSettingsString();
-        });
-
-        pimpl_->server.bind("simFindLookAtRotation", [&](const std::string& vehicle_name, const std::string& object_name) -> RpcLibAdaptorsBase::Vector3r {
-            const auto& rot = getWorldSimApi()->findLookAtRotation(vehicle_name, object_name);
-            return RpcLibAdaptorsBase::Vector3r(rot);
         });
 
         //if we don't suppress then server will bomb out for exceptions raised by any method

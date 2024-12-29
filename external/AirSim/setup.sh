@@ -60,7 +60,7 @@ else #linux
         wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
         sudo apt-get update
     fi
-    sudo apt-get install -y clang-12 clang++-12 libc++-12-dev libc++abi-12-dev
+    sudo apt-get install -y clang-8 clang++-8 libc++-8-dev libc++abi-8-dev
 fi
 
 if ! which cmake; then
@@ -78,10 +78,6 @@ if [ "$(uname)" == "Darwin" ]; then # osx
         sudo dseditgroup -o edit -a "$(whoami)" -t user dialout
     fi
 
-    # MacOS 11 has new Python env management that breaks the Python 2-to-3
-    # build process. We need to make sure brew updates before attempting to
-    # install, since it will update packaages
-    brew update
     brew_install wget
     brew_install coreutils
 
@@ -170,7 +166,7 @@ if $downloadHighPolySuv; then
             fi
             mkdir -p "suv_download_tmp"
             cd suv_download_tmp
-            wget  https://github.com/CodexLabsLLC/Colosseum/releases/download/v2.0.0-beta.0/car_assets.zip
+            wget  https://github.com/Microsoft/AirSim/releases/download/v1.2.0/car_assets.zip
             if [ -d "../Unreal/Plugins/AirSim/Content/VehicleAdv/SUV" ]; then
                 rm -rf "../Unreal/Plugins/AirSim/Content/VehicleAdv/SUV"
             fi
@@ -186,7 +182,7 @@ echo "Installing Eigen library..."
 
 if [ ! -d "AirLib/deps/eigen3" ]; then
     echo "Downloading Eigen..."
-    wget -O eigen3.zip https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.zip
+    wget -O eigen3.zip https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.zip
     unzip -q eigen3.zip -d temp_eigen
     mkdir -p AirLib/deps/eigen3
     mv temp_eigen/eigen*/Eigen AirLib/deps/eigen3

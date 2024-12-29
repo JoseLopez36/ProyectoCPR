@@ -34,7 +34,7 @@ jobs:
 
           deactivate
 
-      - name: Build Colosseum Documentation
+      - name: Build AirSim Documentation
         run: ./build_docs.sh
 
       # Only on commits to 'main' branch

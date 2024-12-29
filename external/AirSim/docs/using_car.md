@@ -1,6 +1,6 @@
-# How to Use Car in Colosseum
+# How to Use Car in AirSim
 
-By default Colosseum prompts user for which vehicle to use. You can easily change this by setting [SimMode](settings.md#SimMode). For example, if you want to use car instead then just set the SimMode in your [settings.json](settings.md) which you can find in your `~/Documents/Colosseum` folder, like this:
+By default AirSim prompts user for which vehicle to use. You can easily change this by setting [SimMode](settings.md#SimMode). For example, if you want to use car instead then just set the SimMode in your [settings.json](settings.md) which you can find in your `~/Documents/AirSim` folder, like this:
 
 ```
 {
@@ -9,7 +9,7 @@ By default Colosseum prompts user for which vehicle to use. You can easily chang
 }
 ```
 
-Now when you restart Colosseum, you should see the car spawned automatically.
+Now when you restart AirSim, you should see the car spawned automatically.
 
 ## Manual Driving 
 Please use the keyboard arrow keys to drive manually. Spacebar for the handbrake. In manual drive mode, gears are set in "auto".

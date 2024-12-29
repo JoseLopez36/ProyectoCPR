@@ -9,10 +9,7 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-        with:
-          submodules: 'recursive'
+      - uses: actions/checkout@v3
 
       - name: Enable Developer Command Prompt
         uses: ilammy/msvc-dev-cmd@v1
@@ -20,3 +17,9 @@ jobs:
       - name: Build AirLib
         shell: cmd
         run: build.cmd
+
+      - name: Unity build
+        shell: cmd
+        run: |
+          cd Unity
+          build.cmd

@@ -66,7 +66,7 @@ bool WorldSimApi::destroyObject(const std::string& object_name)
         AActor* actor = UAirBlueprintLib::FindActor<AActor>(simmode_, FString(object_name.c_str()));
         if (actor) {
             actor->Destroy();
-            result = actor->IsPendingKillPending();
+            result = actor->IsPendingKill();
         }
         if (result)
             simmode_->scene_object_map.Remove(FString(object_name.c_str()));
@@ -333,16 +333,6 @@ std::vector<std::string> WorldSimApi::listSceneObjects(const std::string& name_r
     std::vector<std::string> result;
     UAirBlueprintLib::RunCommandOnGameThread([this, &name_regex, &result]() {
         result = UAirBlueprintLib::ListMatchingActors(simmode_, name_regex);
-    },
-                                             true);
-    return result;
-}
-
-std::vector<std::string> WorldSimApi::listSceneObjectsByTag(const std::string& tag_regex) const
-{
-    std::vector<std::string> result;
-    UAirBlueprintLib::RunCommandOnGameThread([this, &tag_regex, &result]() {
-        result = UAirBlueprintLib::ListMatchingActorsByTag(simmode_, tag_regex);
     },
                                              true);
     return result;
@@ -729,11 +719,6 @@ void WorldSimApi::setWind(const Vector3r& wind) const
     simmode_->setWind(wind);
 }
 
-void WorldSimApi::setExtForce(const Vector3r& ext_force) const
-{
-    simmode_->setExtForce(ext_force);
-}
-
 std::vector<std::string> WorldSimApi::listVehicles() const
 {
     std::vector<std::string> vehicle_names;
@@ -1047,7 +1032,6 @@ std::vector<msr::airlib::DetectionInfo> WorldSimApi::getDetections(ImageCaptureB
                                             : simmode_->getVehicleSimApi(camera_details.vehicle_name)->getNedTransform();
 
     UAirBlueprintLib::RunCommandOnGameThread([camera, image_type, &result, &ned_transform]() {
-
         const TArray<FDetectionInfo>& detections = camera->getDetectionComponent(image_type, false)->getDetections();
         result.resize(detections.Num());
 
@@ -1056,41 +1040,21 @@ std::vector<msr::airlib::DetectionInfo> WorldSimApi::getDetections(ImageCaptureB
 
             Vector3r nedWrtOrigin = ned_transform.toGlobalNed(detections[i].Actor->GetActorLocation());
             result[i].geo_point = msr::airlib::EarthUtils::nedToGeodetic(nedWrtOrigin,
-                                                                         msr::airlib::AirSimSettings::singleton().origin_geopoint);
+                                                                         AirSimSettings::singleton().origin_geopoint);
 
-            result[i].box2D.min = msr::airlib::Vector2r(detections[i].Box2D.Min.X, detections[i].Box2D.Min.Y);
-            result[i].box2D.max = msr::airlib::Vector2r(detections[i].Box2D.Max.X, detections[i].Box2D.Max.Y);
+            result[i].box2D.min = Vector2r(detections[i].Box2D.Min.X, detections[i].Box2D.Min.Y);
+            result[i].box2D.max = Vector2r(detections[i].Box2D.Max.X, detections[i].Box2D.Max.Y);
 
             result[i].box3D.min = ned_transform.toLocalNed(detections[i].Box3D.Min);
             result[i].box3D.max = ned_transform.toLocalNed(detections[i].Box3D.Max);
 
             const Vector3r& position = ned_transform.toLocalNed(detections[i].RelativeTransform.GetTranslation());
-            const msr::airlib::Quaternionr& orientation = ned_transform.toNed(detections[i].RelativeTransform.GetRotation());
+            const Quaternionr& orientation = ned_transform.toNed(detections[i].RelativeTransform.GetRotation());
 
             result[i].relative_pose = Pose(position, orientation);
         }
     },
                                              true);
-
-    return result;
-}
-
-msr::airlib::Vector3r WorldSimApi::findLookAtRotation(const std::string& vehicle_name, const std::string& object_name)
-{
-    Vector3r result = Vector3r::Zero();
-    PawnSimApi* pawn = simmode_->getVehicleSimApi(vehicle_name);
-
-    if (pawn) {
-        AActor* source = pawn->getPawn();
-        UAirBlueprintLib::RunCommandOnGameThread([this, object_name, &source, &result]() {
-            AActor* target = UAirBlueprintLib::FindActor<AActor>(simmode_, FString(object_name.c_str()));
-            if (target) {
-                FRotator rot = UAirBlueprintLib::FindLookAtRotation(source, target);
-                result = Vector3r(rot.Pitch, rot.Roll, rot.Yaw);
-            }
-        },
-                                                 true);
-    }
 
     return result;
 }

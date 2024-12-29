@@ -8,7 +8,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04]
+        os: [ubuntu-18.04, ubuntu-20.04]
 
     steps:
       - uses: actions/checkout@v3
@@ -18,6 +18,12 @@ jobs:
 
       - name: Build AirLib
         run: ./build.sh
+
+      - name: Unity Build
+        run: |
+          sudo apt-get install libboost-all-dev
+          cd Unity
+          ./build.sh
 
       - name: Build ROS Wrapper
         run: |
@@ -34,13 +40,12 @@ jobs:
           source /opt/ros/*/setup.bash
           cd ros2
           colcon build --cmake-args -DCMAKE_C_COMPILER=gcc-8 --cmake-args -DCMAKE_CXX_COMPILER=g++-8
-
-      # Removing support for GazeboDrone. Gazebo is dead. Long live AirSim/Colosseum.
-      # - name: Build GazeboDrone
-      #   run: |
-      #     sudo apt-get install -qq libgazebo9-dev gcc-12 g++-12
-      #     ./clean.sh && ./build.sh --gcc
-      #     cd GazeboDrone
-      #     mkdir build && cd build
-      #     cmake -DCMAKE_C_COMPILER=gcc-12 -DCMAKE_CXX_COMPILER=g++-12 ..
-      #     make
+          
+      - name: Build GazeboDrone
+        run: |
+          sudo apt-get install -qq libgazebo9-dev gcc-8 g++-8
+          ./clean.sh && ./build.sh --gcc
+          cd GazeboDrone
+          mkdir build && cd build
+          cmake -DCMAKE_C_COMPILER=gcc-8 -DCMAKE_CXX_COMPILER=g++-8 ..
+          make

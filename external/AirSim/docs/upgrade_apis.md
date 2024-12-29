@@ -1,14 +1,14 @@
 # Upgrading API Client Code
-There have been several API changes in Colosseum v1.2 that we hope removes inconsistency, adds future extensibility and presents cleaner interface. Many of these changes are however *breaking changes* which means you will need to modify your client code that talks to Colosseum.
+There have been several API changes in AirSim v1.2 that we hope removes inconsistency, adds future extensibility and presents cleaner interface. Many of these changes are however *breaking changes* which means you will need to modify your client code that talks to AirSim.
 
 ## Quicker Way
-While most changes you need to do in your client code are fairly easy, a quicker way is simply to take a look at the example code such as [Hello Drone](https://github.com/CodexLabsLLC/Colosseum/tree/main/PythonClient//multirotor/hello_drone.py)or [Hello Car](https://github.com/CodexLabsLLC/Colosseum/tree/main/PythonClient//car/hello_car.py) to get gist of changes.
+While most changes you need to do in your client code are fairly easy, a quicker way is simply to take a look at the example code such as [Hello Drone](https://github.com/Microsoft/AirSim/tree/main/PythonClient//multirotor/hello_drone.py)or [Hello Car](https://github.com/Microsoft/AirSim/tree/main/PythonClient//car/hello_car.py) to get gist of changes.
 
-## Importing Colosseum
+## Importing AirSim
 Instead of,
 
 ```python
-from ColosseumClient import *
+from AirSimClient import *
 ```
 use this:
 
@@ -16,7 +16,7 @@ use this:
 import airsim
 ```
 
-Above assumes you have installed Colosseum module using, 
+Above assumes you have installed AirSim module using, 
 ```
 pip install --user airsim
 ```
@@ -30,8 +30,8 @@ import airsim
 
 Here setup_path.py should exist in your folder and it will set the path of `airsim` package in `PythonClient` repo folder. All examples in PythonClient folder uses this method.
 
-## Using Colosseum Classes
-As we have everything now in package, you will need to use explicit namespace for Colosseum classes like shown below.
+## Using AirSim Classes
+As we have everything now in package, you will need to use explicit namespace for AirSim classes like shown below.
 
 Instead of,
 
@@ -45,14 +45,14 @@ use this:
 client1 = airsim.CarClient()
 ```
 
-## Colosseum Types
+## AirSim Types
 
 We have moved all types in `airsim` namespace.
 
 Instead of,
 
 ```python
-image_type = ColosseumImageType.DepthVis
+image_type = AirSimImageType.DepthVis
 
 d = DrivetrainType.MaxDegreeOfFreedom
 ```
@@ -72,7 +72,7 @@ Nothing new below, it's just combination of above. Note that all APIs that previ
 Instead of,
 
 ```python
-responses = client.simGetImages([ImageRequest(0, ColosseumImageType.DepthVis)])
+responses = client.simGetImages([ImageRequest(0, AirSimImageType.DepthVis)])
 ```
 
 use this:
@@ -82,14 +82,14 @@ responses = client.simGetImages([airsim.ImageRequest("0", airsim.ImageType.Depth
 ```
 
 ## Utility Methods
-In earlier version, we provided several utility methods as part of `ColosseumClientBase`. These methods are now moved to `airsim` namespace for more pythonic interface.
+In earlier version, we provided several utility methods as part of `AirSimClientBase`. These methods are now moved to `airsim` namespace for more pythonic interface.
 
 Instead of,
 
 ```python
-ColosseumClientBase.write_png(my_path, img_rgba) 
+AirSimClientBase.write_png(my_path, img_rgba) 
 
-ColosseumClientBase.wait_key('Press any key')
+AirSimClientBase.wait_key('Press any key')
 ```
 
 use this:
@@ -101,7 +101,7 @@ airsim.wait_key('Press any key')
 ```
 
 ## Camera Names
-Colosseum now uses [names](image_apis.md#available_cameras) to reference cameras instead of index numbers. However to retain backward compatibility, these names are aliased with old index numbers as string.
+AirSim now uses [names](image_apis.md#available_cameras) to reference cameras instead of index numbers. However to retain backward compatibility, these names are aliased with old index numbers as string.
 
 Instead of,
 
@@ -120,7 +120,7 @@ client.simGetCameraInfo("front-center")
 ```
 
 ## Async Methods
-For multirotors, Colosseum had various methods such as `takeoff` or `moveByVelocityZ` that would take long time to complete. All of such methods are now renamed by adding the suffix *Async* as shown below.
+For multirotors, AirSim had various methods such as `takeoff` or `moveByVelocityZ` that would take long time to complete. All of such methods are now renamed by adding the suffix *Async* as shown below.
 
 Instead of,
 

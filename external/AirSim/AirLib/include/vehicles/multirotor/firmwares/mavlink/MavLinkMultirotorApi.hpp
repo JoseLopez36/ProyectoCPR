@@ -1198,24 +1198,6 @@ namespace airlib
             return logviewer_proxy_ != nullptr;
         }
 
-        void qgcCallback(std::shared_ptr<mavlinkcom::MavLinkConnection> connection_val, const mavlinkcom::MavLinkMessage& msg)
-        {
-            unused(connection_val);
-            processQgcMessages(msg);
-        }
-
-        void controlCallback(std::shared_ptr<mavlinkcom::MavLinkConnection> connection_val, const mavlinkcom::MavLinkMessage& msg)
-        {
-            unused(connection_val);
-            processControlMessages(msg);
-        }
-
-        void mavCallback(std::shared_ptr<mavlinkcom::MavLinkConnection> connection_val, const mavlinkcom::MavLinkMessage& msg)
-        {
-            unused(connection_val);
-            processMavMessages(msg);
-        }
-
         bool connectToQGC()
         {
             if (connection_info_.qgc_ip_address.size() > 0) {
@@ -1227,12 +1209,10 @@ namespace airlib
                     qgc_proxy_ = nullptr;
                 }
                 else {
-                    mavlinkcom::MessageHandler handler = std::bind(&MavLinkMultirotorApi::qgcCallback, this, std::placeholders::_1, std::placeholders::_2);
-                    connection->subscribe(handler);
-                    //connection->subscribe([=](std::shared_ptr<mavlinkcom::MavLinkConnection> connection_val, const mavlinkcom::MavLinkMessage& msg) {
-                    //    unused(connection_val);
-                    //    processQgcMessages(msg);
-                    //});
+                    connection->subscribe([=](std::shared_ptr<mavlinkcom::MavLinkConnection> connection_val, const mavlinkcom::MavLinkMessage& msg) {
+                        unused(connection_val);
+                        processQgcMessages(msg);
+                    });
                 }
             }
             return qgc_proxy_ != nullptr;
@@ -1334,13 +1314,10 @@ namespace airlib
             }
 
             // start listening to the SITL connection.
-            mavlinkcom::MessageHandler handler = std::bind(&MavLinkMultirotorApi::mavCallback, this, std::placeholders::_1, std::placeholders::_2);
-            connection_->subscribe(handler);
-
-            //connection_->subscribe([=](std::shared_ptr<mavlinkcom::MavLinkConnection> connection, const mavlinkcom::MavLinkMessage& msg) {
-            //    unused(connection);
-            //    processMavMessages(msg);
-            //});
+            connection_->subscribe([=](std::shared_ptr<mavlinkcom::MavLinkConnection> connection, const mavlinkcom::MavLinkMessage& msg) {
+                unused(connection);
+                processMavMessages(msg);
+            });
 
             hil_node_ = std::make_shared<mavlinkcom::MavLinkNode>(connection_info_.sim_sysid, connection_info_.sim_compid);
             hil_node_->connect(connection_);
@@ -1451,13 +1428,10 @@ namespace airlib
             // listen to this UDP mavlink connection also
             auto mavcon = mav_vehicle_->getConnection();
             if (mavcon != nullptr && mavcon != connection_) {
-                mavlinkcom::MessageHandler handler = std::bind(&MavLinkMultirotorApi::controlCallback, this, std::placeholders::_1, std::placeholders::_2);
-                mavcon->subscribe(handler);
-
-                //mavcon->subscribe([=](std::shared_ptr<mavlinkcom::MavLinkConnection> connection, const mavlinkcom::MavLinkMessage& msg) {
-                //    unused(connection);
-                //    processControlMessages(msg);
-                //});
+                mavcon->subscribe([=](std::shared_ptr<mavlinkcom::MavLinkConnection> connection, const mavlinkcom::MavLinkMessage& msg) {
+                    unused(connection);
+                    processControlMessages(msg);
+                });
             }
             else {
                 mav_vehicle_->connect(connection_);
@@ -1523,13 +1497,10 @@ namespace airlib
                     addStatusMessage(Utils::stringf("Connected to PX4 over serial port: %s", port_name_auto.c_str()));
 
                     // start listening to the HITL connection.
-                    mavlinkcom::MessageHandler handler = std::bind(&MavLinkMultirotorApi::mavCallback, this, std::placeholders::_1, std::placeholders::_2);
-                    connection_->subscribe(handler);
-
-                    //connection_->subscribe([=](std::shared_ptr<mavlinkcom::MavLinkConnection> connection, const mavlinkcom::MavLinkMessage& msg) {
-                    //    unused(connection);
-                    //    processMavMessages(msg);
-                    //});
+                    connection_->subscribe([=](std::shared_ptr<mavlinkcom::MavLinkConnection> connection, const mavlinkcom::MavLinkMessage& msg) {
+                        unused(connection);
+                        processMavMessages(msg);
+                    });
 
                     mav_vehicle_ = std::make_shared<mavlinkcom::MavLinkVehicle>(connection_info_.vehicle_sysid, connection_info_.vehicle_compid);
 

@@ -5,10 +5,10 @@
 
 airsim
 =========================================
-This page documents `airsim`_, the python package to be used for `Microsoft Colosseum`_.
+This page documents `airsim`_, the python package to be used for `Microsoft AirSim`_.
 
 .. _`airsim`: https://pypi.org/project/airsim/
-.. _`Microsoft Colosseum`: https://github.com/CodexLabsLLC/Colosseum 
+.. _`Microsoft AirSim`: https://github.com/microsoft/AirSim 
 
 .. toctree::
 	:maxdepth: 3

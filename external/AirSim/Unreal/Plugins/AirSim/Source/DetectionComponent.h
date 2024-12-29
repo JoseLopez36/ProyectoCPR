@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <string>
-
 #include "CoreMinimal.h"
 #include "Components/SceneComponent.h"
 #include "ObjectFilter.h"

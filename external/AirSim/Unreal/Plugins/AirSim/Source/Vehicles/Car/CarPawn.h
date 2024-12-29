@@ -1,8 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ChaosWheeledVehicleMovementComponent.h"
-#include "WheeledVehiclePawn.h"
+#include "WheeledVehicle.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
 #include "UObject/ConstructorHelpers.h"
@@ -27,7 +26,7 @@ class UInputComponent;
 class UAudioComponent;
 
 UCLASS(config = Game)
-class ACarPawn : public AWheeledVehiclePawn
+class ACarPawn : public AWheeledVehicle
 {
     GENERATED_BODY()
 
@@ -47,7 +46,7 @@ public:
     {
         return &pawn_events_;
     }
-    UChaosVehicleMovementComponent* getVehicleMovementComponent() const;
+    UWheeledVehicleMovementComponent* getVehicleMovementComponent() const;
     const msr::airlib::CarApiBase::CarControls& getKeyBoardControls() const
     {
         return keyboard_controls_;

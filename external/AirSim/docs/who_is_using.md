@@ -1,7 +1,7 @@
-# Who is Using Colosseum?
+# Who is Using AirSim?
 
 #### Would you like to see your own group or project here? 
-Just add a [GitHub issue](https://github.com/CodexLabsLLC/airsim/issues) with quick details and link to your website. 
+Just add a [GitHub issue](https://github.com/microsoft/airsim/issues) with quick details and link to your website. 
 
 * [NASA Ames Research Center – Systems Analysis Office](https://www.nasa.gov/ames)
 * [Astrobotic](https://www.astrobotic.com/technology)
@@ -12,7 +12,7 @@ Just add a [GitHub issue](https://github.com/CodexLabsLLC/airsim/issues) with qu
 * [ICARUS](http://icarus.upc.edu)
 * [UC, Santa Barbara](https://www.ucsb.edu/)
 * [WISE Lab, Univ of Waterloo](https://uwaterloo.ca/waterloo-intelligent-systems-engineering-lab/)
-* [HAMS project, MSR India](https://www.CodexLabsLLC.com/en-us/research/project/hams/)
+* [HAMS project, MSR India](https://www.microsoft.com/en-us/research/project/hams/)
 * [Washington and Lee University](https://www.wlu.edu/)
 * [University of Oklahoma](https://www.ou.edu/)
 * [Robotics Institute, Carnegie Mellon University](https://www.ri.cmu.edu/)
@@ -29,5 +29,4 @@ Just add a [GitHub issue](https://github.com/CodexLabsLLC/airsim/issues) with qu
 * [Myned AI](https://www.myned.ai/)
 * [STPLS3D - University of Southern California Institute for Creative Technologies](http://www.stpls3d.com/)
 * [Central Michigan University](http://www.waynenterprises.com/research)
-* [Codex Labs LLC](http://www.codex-labs-llc.com)
 

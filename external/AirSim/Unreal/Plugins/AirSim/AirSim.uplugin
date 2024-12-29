@@ -22,9 +22,9 @@
     }
   ],
   "Plugins": [
-    {
-      "Name": "ChaosVehiclesPlugin",
-      "Enabled": true
-    }
+	  {
+		  "Name": "PhysXVehicles",
+		  "Enabled": true
+	  }
   ]
 }

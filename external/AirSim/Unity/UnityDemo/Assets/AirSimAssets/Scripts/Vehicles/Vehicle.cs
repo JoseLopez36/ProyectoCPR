@@ -343,25 +343,10 @@ namespace AirSimUnity {
             captureResetEvent = new AutoResetEvent(false);
         }
 
-        private GameObject FindChildWithTag(GameObject parent, string tag) {
-            GameObject child = null;
-            
-            foreach(Transform transform in parent.transform) {
-                if(transform.CompareTag(tag)) {
-                    child = transform.gameObject;
-                    break;
-                }
-            }
-            
-            return child;
-        }
-
         //Register all the capture cameras in the scene for recording and data capture.
         //Make sure every camera is a child of a gameobject with tag "CaptureCameras"
         private void SetUpCameras() {
-            GameObject this_vehicle = GameObject.Find(this.name);
-            GameObject camerasParent = FindChildWithTag(this_vehicle, "CaptureCameras");
-
+            GameObject camerasParent = GameObject.FindGameObjectWithTag("CaptureCameras");
             if (!camerasParent) {
                 Debug.LogWarning("No Cameras found in the scene to capture data");
                 return;

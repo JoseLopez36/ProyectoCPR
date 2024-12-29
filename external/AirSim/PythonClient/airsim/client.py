@@ -555,20 +555,6 @@ class VehicleClient:
         """
         return self.client.call('simListSceneObjects', name_regex)
 
-    def simListSceneObjectsByTag(self, tag_regex = '.*'):
-        """
-        Lists the objects present in the environment by searching their tags
-
-        Default behaviour is to list all objects, regex can be used to return smaller list of matching objects or actors
-
-        Args:
-            tag_regex (str, optional): String to match actor tags against, e.g. "Tag.*"
-
-        Returns:
-            list[str]: List containing all the names
-        """
-        return self.client.call('simListSceneObjectsByTag', tag_regex)
-
     def simLoadLevel(self, level_name):
         """
         Loads a level specified by its name
@@ -1127,20 +1113,7 @@ class VehicleClient:
         """
         return self.client.call('getSettingsString')
 
-    def simSetExtForce(self, ext_force):
-        """
-        Set arbitrary external forces, in World frame, NED direction. Can be used
-        for implementing simple payloads.
-
-        Args:
-            ext_force (Vector3r): Force, in World frame, NED direction, in N
-        """
-        self.client.call('simSetExtForce', ext_force)
-
-    def simFindLookAtRotation(self, object_name, vehicle_name = ''):
-        return self.client.call('simFindLookAtRotation', vehicle_name, object_name)
-
-# -----------------------------------  Multirotor APIs ---------------------------------------------
+#----------------------------------- Multirotor APIs ---------------------------------------------
 class MultirotorClient(VehicleClient, object):
     def __init__(self, ip = "", port = 41451, timeout_value = 3600):
         super(MultirotorClient, self).__init__(ip, port, timeout_value)
