@@ -49,8 +49,8 @@ Para crear la variable de entorno en Windows:
 ### Paso 4. Iniciar el contenedor
 
 Para iniciar el contenedor, arrancar Docker Desktop y desde el directorio raíz del proyecto:
-1. Ve a la carpeta docker.
-1. Haz doble click en el archivo `docker_run.bat`.
+1. Ve a la carpeta `tools`.
+1. Haz doble click en el archivo `start_container.bat`.
 
 Esto correrá el contenedor con la imagen construida anteriormente y montará el volumen correspondiente. Una vez esté corriendo, tendrás acceso a un shell dentro del contenedor. Este paso debe repetirse cada vez que se quiera iniciar el contenedor.
 
@@ -96,16 +96,32 @@ Para configurar AirSim es necesario disponer del archivo `settings.json`. A cont
 Para lanzar el proyecto se deben seguir los siguientes pasos:
 
 ### Paso 1. Lanzar el ejecutable del proyecto:
+
 Ejecuta el .exe correspondiente del proyecto. Los distintos ejecutables se encuentran en los Releases del repositorio.
 
-### Paso 2. Ejecutar AirSim con ROS desde el contenedor Docker:
-Abre el contenedor haciendo doble-click en `docker/docker_run.bat` y ejecuta los siguientes comandos:
+### Paso 2. Abrir contenedor Docker:
+
+Abre el contenedor haciendo doble-click en `tools/start_container.bat`. Si deseas abrir otro terminal para el mismo contenedor, ejecuta `tools/open_container_terminal.bat`. Si deseas cerrar el contenedor, ejecuta `docker_kill.bat`.
+
+### Paso 3. Configurar IP del Host:
+
+Edita el archivo `lanzar_proyecto_cpr.sh` y sustituye {tu-ip} por la IPv4 del host (ver Nota).
+
+Líneas afectadas:
 ```bash
-cd ~/ProyectoCPR/ros
-catkin_make
-source devel/setup.bash
-roslaunch airsim_ros_pkgs airsim_node.launch host:=<wsl-host-ip>
+# Asignar manualmente la IP
+wsl_host_ip="{tu-ip}"
 ```
-Nota: `wsl-host-ip` se puede obtener ejecutando ipconfig en la máquina host y copiando la IPv4 bajo el nombre `Ethernet adapter vEthernet (WSL (Hyper-V firewall))`.
+
+Nota: Esta IP se puede obtener ejecutando ipconfig en la máquina host y copiando la IPv4 bajo el nombre `Ethernet adapter vEthernet (WSL (Hyper-V firewall))`.
+
+### Paso 4. Ejecutar el programa desde el contenedor Docker:
+
+Ejecuta en el terminal del contenedor:
+```bash
+   cd ~/ProyectoCPR
+   ./lanzar_proyecto_cpr.sh
+```
+
 
 
