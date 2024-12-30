@@ -121,12 +121,12 @@ Ejecuta los siguientes scripts en orden y cada uno en distintos terminales (para
 
 En el primer terminal:
 ```bash
-   ~/ProyectoCPR/lanzar_airsim.sh
+~/ProyectoCPR/lanzar_airsim.sh
 ```
 
 En el segundo terminal:
 ```bash
-   ~/ProyectoCPR/lanzar_proyecto_cpr.sh
+~/ProyectoCPR/lanzar_proyecto_cpr.sh
 ```
 
 (Opcional) En el tercer terminal:
