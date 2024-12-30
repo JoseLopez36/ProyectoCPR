@@ -131,7 +131,7 @@ En el segundo terminal:
 
 (Opcional) En el tercer terminal:
 ```bash
-   ~/ProyectoCPR/lanzar_rviz.sh default 
+~/ProyectoCPR/lanzar_rviz.sh default 
 ```
 Puedes cambiar la configuración `default` por cualquier otra disponible para RViz.
 
