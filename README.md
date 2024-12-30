@@ -105,7 +105,7 @@ Abre el contenedor haciendo doble-click en `tools/start_container.bat`. Si desea
 
 ### Paso 3. Configurar IP del Host:
 
-Edita el archivo `lanzar_proyecto_cpr.sh` y sustituye {tu-ip} por la IPv4 del host (ver Nota).
+Edita el archivo `lanzar_airsim.sh` y sustituye {tu-ip} por la IPv4 del host (ver Nota).
 
 Líneas afectadas:
 ```bash
@@ -117,11 +117,22 @@ Nota: Esta IP se puede obtener ejecutando ipconfig en la máquina host y copiand
 
 ### Paso 4. Ejecutar el programa desde el contenedor Docker:
 
-Ejecuta en el terminal del contenedor:
+Ejecuta los siguientes scripts en orden y cada uno en distintos terminales (para abrir un nuevo terminal ejecuta `tools/open_container_terminal.bat`):
+
+En el primer terminal:
 ```bash
-   cd ~/ProyectoCPR
-   ./lanzar_proyecto_cpr.sh
+   ~/ProyectoCPR/lanzar_airsim.sh
 ```
 
+En el segundo terminal:
+```bash
+   ~/ProyectoCPR/lanzar_proyecto_cpr.sh
+```
+
+(Opcional) En el tercer terminal:
+```bash
+   ~/ProyectoCPR/lanzar_rviz.sh default 
+```
+Puedes cambiar la configuración `default` por cualquier otra disponible para RViz.
 
 

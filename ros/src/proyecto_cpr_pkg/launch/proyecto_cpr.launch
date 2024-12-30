@@ -1,8 +1,3 @@
 <launch>
 
-    <!-- Incluir el archivo de lanzamiento de otro paquete -->
-    <include file="$(find airsim_ros_pkgs)/launch/airsim_node.launch">
-        <arg name="host" value="localhost"/>
-    </include>
-
 </launch>

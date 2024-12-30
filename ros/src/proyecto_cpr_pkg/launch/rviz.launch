@@ -1,0 +1,7 @@
+<launch>
+    <!-- Argumento para el archivo RViz -->
+    <arg name="config" default="default" />
+
+    <!-- Nodo RViz -->
+    <node type="rviz" name="rviz" pkg="rviz" args="-d $(find proyecto_cpr_pkg)/rviz/$(arg config).rviz" />
+</launch>
