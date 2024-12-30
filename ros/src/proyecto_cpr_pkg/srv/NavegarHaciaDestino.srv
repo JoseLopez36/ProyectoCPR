@@ -1,0 +1,9 @@
+#Request : espera posicion como coordenadas x, y, z
+#Request : espera orientacion como yaw 
+float64 x
+float64 y
+float64 z
+float64 yaw
+---
+#Response : ha_llegado=true - (si el vehiculo ha logrado llegar a la posicion)
+bool ha_llegado
