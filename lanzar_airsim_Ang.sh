@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Asignar manualmente la IP
-wsl_host_ip="172.28.192.1"
+wsl_host_ip="172.23.16.1"
 
 # Verificar si se obtuvo una IP válida
 if [[ -z "$wsl_host_ip" ]]; then
@@ -21,7 +21,7 @@ echo "export DISPLAY=$DISPLAY" > /tmp/shared_env_vars
 cd ~/ProyectoCPR/ros || { echo "Directorio ~/ProyectoCPR/ros no encontrado"; exit 1; }
 
 # Compilar el proyecto ROS
-catkin_make || { echo "Error al compilar el proyecto con catkin_make."; exit 1; }
+#catkin_make || { echo "Error al compilar el proyecto con catkin_make."; exit 1; }
 
 # Fuente del entorno ROS
 source devel/setup.bash

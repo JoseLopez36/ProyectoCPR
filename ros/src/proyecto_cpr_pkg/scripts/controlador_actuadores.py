@@ -8,77 +8,162 @@ import proyecto_cpr_pkg.msg as cpr
 
 class ControladorActuadores:
     def __init__(self):
-        # Variables miembro
-        self.vel_lineal_deseada = 0.0   # (std_msgs/float32)
-        self.vel_angular_deseada = 0.0  # (std_msgs/float32)
-        self.vel_lineal_actual = 0.0    # (std_msgs/float32)
-        self.twist = None               # (geometry_msgs/Twist)
-
-        # Parámetros
-        self.kp = 0.0
-        self.ki = 0.0
-        self.kd = 0.0
+         # Inicializar el nodo
+        rospy.init_node('controlador_actuadores')
 
         # Suscriptores
-        rospy.Subscriber('/cmd_actuadores', cpr.CmdActuadores, self.cmd_actuadores_callback)
+        rospy.Subscriber('/cmd_actuadores', cpr.CmdActuadores, self.cmd_actuadores_callback)       
         rospy.Subscriber('/airsim_node/car_1/car_state', air.CarState, self.state_callback)
 
         # Publicadores
         self.pub_control = rospy.Publisher(
             '/airsim_node/car_1/car_cmd', 
             air.CarControls,
-            queue_size=0
+            queue_size=10
         )
 
+        # Variables miembro
+        self.vel_lineal_deseada = 0.0   # (std_msgs/float32)
+        self.vel_angular_deseada = 0.0  # (std_msgs/float32)
+        self.vel_lineal_actual = None    # (std_msgs/float32)
+        self.twist_actual = None               # (geometry_msgs/Twist)
+
+        # Parámetros
+        self.Kp = 500.0
+        self.Ti = 2.0
+        self.Td = 50.0     
+        self.Tm = 1.0           # s . Tiempo de muestro de la llamada al controlador. No debe ser menor que la actualización del estado
+        
+        #variables estaticas del controlador pid
+        self.ek_2 = 0.0
+        self.ek_1 = 0.0
+        self.uk_1 = 0.0   
+
+        self.previous_velocity = 0.0
+        self.previous_time = 0.0
+
+
+        #Llamada a funcion controlador de manera periodica al controlador. Con periodo de muestro independiente de la frecuencia del sensor
+        self.timer = rospy.Timer(rospy.Duration(self.Tm),self.control_callback,oneshot=False)   
+        
+        rospy.on_shutdown(self.shutdown)
+        
         rospy.loginfo("Controlador de actuadores inicializado.")
 
-    def cmd_actuadores_callback(self, msg):
+    
+    def run(self):
+       rospy.spin()
+
+    def shutdown(self):                     # Apagar controlador
+        rospy.loginfo("Apagando controlador de actuadores")
+        self.timer.shutdown()  
+        rospy.sleep(self.Tm)
+        # Publicar ultimo mensaje con acceleración nula
+        self.pub_control.publish(air.CarControls())
+        rospy.loginfo("Information pass to the vehicle:\n Throttle = 0.0  \n Brake = 0.0 ")
+        rospy.sleep(1)
+
+    def publish(self, datos):               # Publicar los datos computados en el nodo
+        self.pub_control.publish(datos)
+
+    def cmd_actuadores_callback(self, msg : cpr.CmdActuadores):
         # Extraer la información de velocidad y dirección
         self.vel_lineal_deseada = msg.vel_lineal      # Magnitud de la velocidad lineal deseada
         self.vel_angular_deseada = msg.vel_angular    # Magnitud de la velocidad angular deseada
-
-    def state_callback(self, msg):
-        # Extraer la información del estado del coche
-        self.vel_lineal_actual = msg.speed              # Magnitud de la velocidad actual del coche
-        self.twist = msg.twist                          # Twist actual del coche
-
-    def ejecutar_controlador(self):
-        # TODO: Implementación de control de bajo nivel
-
-
-        # Construir los comandos para actuadores
-        controles = air.CarControls()
-        controles.steering = 0.0
-        controles.throttle = 0.0
-        controles.brake = 0.0
-        controles.manual = False
-        controles.manual_gear = 0
-        controles.handbrake = False
-        controles.gear_immediate = True
         
-        now = rospy.Time.now()
-        controles.header.stamp = now
 
-        # Publicar los comandos
-        self.publish(controles)
+    def state_callback(self, state_msg : air.CarState):
+        
+        
+        # Extraer la información del estado del coche
+        self.vel_lineal_actual = state_msg.speed              # Magnitud de la velocidad actual del coche
+        self.twist_actual = state_msg.twist                          # Twist actual del coche
 
-    def publish(self, datos):
-        # Publicar los datos computados en el nodo
-        self.pub_control.publish(datos)
+    def control_callback(self,timerEvent):
+        if self.vel_lineal_actual is not None:
+            rospy.loginfo(f"Car's current speed is: {self.vel_lineal_actual} m/s") 
 
-    def run(self):
-        # Mantener el nodo en ejecución
-        rate = rospy.Rate(50)  # 50 Hz
-        while not rospy.is_shutdown():
-            self.ejecutar_controlador()
-            rate.sleep()
+            #Prueba- medicion acceleracion real conseguida
+            current_time = rospy.Time.now().to_sec()  
+            dt = current_time - self.previous_time
+            if dt > 0:
+                acc_real = (self.vel_lineal_actual -  self.previous_velocity)/dt
+
+            rospy.loginfo(f"Car's true acceleration is: {acc_real} m/s") 
+
+            self.previous_velocity = self.vel_lineal_actual
+            self.previous_time = current_time
+
+
+            self.vel_lineal_deseada = 10.0      #Asignacion temporal para pruebas
+            
+            #Calculo de señal de control
+            acceleration = self.pid(self.vel_lineal_deseada)
+
+            # Contrucción los mensaje de control de los actuadores
+            control_msg = air.CarControls() 
+            now = rospy.Time.now()
+            control_msg.header.stamp = now          
+            control_msg.manual = False
+            control_msg.manual_gear = 0
+            control_msg.handbrake = False
+            control_msg.gear_immediate = True
+
+            control_msg.steering = 0.0
+
+            if acceleration >= 0:
+                control_msg.throttle = acceleration
+                control_msg.brake = 0.0
+            else:
+                control_msg.brake = - acceleration              #brake necesita ser positivo
+                control_msg.throttle = 0.0
+
+            rospy.loginfo(f"Información enviada a los actuadores:\n Throttle = {control_msg.throttle} \n Brake = {control_msg.brake}")
+           
+
+            # Publicar los comandos
+            self.publish(control_msg)
+
+    def pid(self,vd:float)->float:               #Implementacón de un controlador PID
+        #Aproximación de Euler II
+        q0=self.Kp*(1+(self.Tm/self.Ti)+(self.Td/self.Tm))
+        q1=self.Kp*(-1-2*(self.Td/self.Tm))
+        q2=self.Kp*self.Td/self.Tm
+
+        #Calculo del error
+        ek = vd - self.vel_lineal_actual
+        rospy.loginfo(f"Error : {ek}")                #Información para debugging
+
+        #Ley de control
+        uk = self.uk_1 + q0*ek + q1*self.ek_1 + q2*self.ek_2
+        a = uk
+        #Saturación de la señal de control - aceleracion
+        #if a > self.maxac:
+        #    a = self.maxac
+        #elif a < self.minac:
+        #    a = self.minac
+
+
+        #Actualizacion de variables
+        self.ek_2 = self.ek_1
+        self.ek_1 = ek
+        self.uk_1 = uk 
+
+      
+        
+
+        
+
+                #Necesita un algoritmo de anti-wind-up
+
+                #A de equilibrio?
+        return a
 
 if __name__ == '__main__':
-    # Inicializar el nodo
-    rospy.init_node('controlador_actuadores')
-
-    # Crear objeto
-    nodo = ControladorActuadores()
-
-    # Correr el nodo
-    nodo.run()
+    try:
+        # Crear instancia del nodo
+        controller = ControladorActuadores()
+        # Correr el nodo
+        controller.run()
+    except rospy.ROSInterruptException:
+        pass 

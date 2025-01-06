@@ -13,17 +13,17 @@ elif [[ "$DISTRO" == "xenial" ]]; then
     ROS_DISTRO="kinetic"
 fi
 
-sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
-sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
+sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
+apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
 
-sudo apt-get update
-sudo apt-get install -y -qq ros-$ROS_DISTRO-ros-base
+apt-get update
+apt-get install -y -qq ros-$ROS_DISTRO-ros-base
 
 echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> ~/.bashrc
 
-sudo apt-get install -y python3-pip python3-yaml python3-setuptools
+apt-get install -y python3-pip python3-yaml python3-setuptools
 pip3 install rosdep rosinstall rospkg catkin-pkg
-sudo rosdep init
+rosdep init
 rosdep update
 
 # AirSim ROS Wrapper dependencies
@@ -32,11 +32,11 @@ rosdep update
 sudo apt-get install -y ros-$ROS_DISTRO-vision-opencv ros-$ROS_DISTRO-image-transport libyaml-cpp-dev
 
 if [[ "$DISTRO" == "xenial" ]]; then
-    sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-    sudo apt-get update
+    add-apt-repository -y ppa:ubuntu-toolchain-r/test
+    apt-get update
 fi
 
-sudo apt-get install -y gcc-8 g++-8
-sudo apt-get install -y ros-$ROS_DISTRO-mavros* ros-$ROS_DISTRO-tf2-sensor-msgs ros-$ROS_DISTRO-tf2-geometry-msgs
+apt-get install -y gcc-8 g++-8
+apt-get install -y ros-$ROS_DISTRO-mavros* ros-$ROS_DISTRO-tf2-sensor-msgs ros-$ROS_DISTRO-tf2-geometry-msgs
 
 pip3 install catkin-tools
