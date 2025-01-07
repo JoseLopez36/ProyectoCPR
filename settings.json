@@ -5,7 +5,7 @@
   "ViewMode": "SpringArmChase",
   "ClockSpeed": 1.0,
   "Vehicles": {
-    "drone_1": {
+    "car_1": {
       "VehicleType": "PhysXCar",
       "DefaultVehicleState": "Armed",
       "EnableCollisionPassthrogh": false,

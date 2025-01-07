@@ -13,21 +13,20 @@ class ControladorActuadores:
 
         # Suscriptores
         rospy.Subscriber('/actuadores_cmd', cpr.CmdActuadores, self.cmd_actuadores_callback)       
-        rospy.Subscriber('/airsim_node/PhysXCar/car_state', air.CarState, self.state_callback)
+        rospy.Subscriber('/airsim_node/car_1/car_state', air.CarState, self.state_callback)
 
         # Publicadores
         self.pub_control = rospy.Publisher(
-            '/airsim_node/PhysXCar/car_cmd', 
+            '/airsim_node/car_1/car_cmd', 
             air.CarControls,
             queue_size=10
         )
 
         # Variables miembro
-        self.vel_lineal_deseada = 0.0   # (std_msgs/float32)
-        #self.vel_angular_deseada = 0.0  # (std_msgs/float32)
+        self.vel_lineal_deseada = 0.0    # (std_msgs/float32)
+        self.steering_deseado = 0.0      # (std_msgs/float32)
         self.vel_lineal_actual = None    # (std_msgs/float32)
-        #self.twist_actual = None               # (geometry_msgs/Twist)
-        self.rpm_actual = 0.0
+       #self.rpm_actual = 0.0
 
         #Aceleraciones máxima y mínima
         self.maxacc = 1.0
@@ -74,7 +73,7 @@ class ControladorActuadores:
     def cmd_actuadores_callback(self, msg : cpr.CmdActuadores):
         # Extraer la información de velocidad y dirección
         self.vel_lineal_deseada = msg.vel_lineal      # Magnitud de la velocidad lineal deseada
-        self.vel_angular_deseada = msg.vel_angular    # Magnitud de la velocidad angular deseada
+        self.steering_deseado = msg.steering          #Magnitud ángulo de giro de las ruedas deseado
         
 
     def state_callback(self, state_msg : air.CarState):
@@ -82,7 +81,6 @@ class ControladorActuadores:
         
         # Extraer la información del estado del coche
         self.vel_lineal_actual = state_msg.speed              # Magnitud de la velocidad actual del coche
-        #self.twist_actual = state_msg.twist                          # Twist actual del coche
         self.rpm_actual = state_msg.rpm 
 
         self.control_callback() 
@@ -92,18 +90,15 @@ class ControladorActuadores:
         if self.vel_lineal_actual is not None:
             rospy.loginfo(f"Car's current speed is: {self.vel_lineal_actual} m/s") 
             rospy.loginfo(f"Car's rpm are: {self.rpm_actual}") 
+
             #Prueba- medicion acceleracion real conseguida
             current_time = rospy.Time.now().to_sec()  
             dt = current_time - self.previous_time
             if dt > 0:
                 acc_real = (self.vel_lineal_actual -  self.previous_velocity)/dt
-
             rospy.loginfo(f"Car's true acceleration is: {acc_real} m/s") 
-
             self.previous_velocity = self.vel_lineal_actual
             self.previous_time = current_time
-
-
             
             #Calculo de señal de control
             acceleration = self.pid(self.vel_lineal_deseada)
@@ -117,16 +112,19 @@ class ControladorActuadores:
             control_msg.handbrake = False
             control_msg.gear_immediate = True
 
-            control_msg.steering = 0.0
+            control_msg.steering = self.steering_deseado
 
             if acceleration >= 0:
                 control_msg.throttle = acceleration
                 control_msg.brake = 0.0
             else:
-                control_msg.brake = - acceleration              #brake necesita ser positivo
+                control_msg.brake = - acceleration         #brake necesita ser positivo
                 control_msg.throttle = 0.0
 
-            rospy.loginfo(f"Información enviada a los actuadores:\n Throttle = {control_msg.throttle} \n Brake = {control_msg.brake}")
+            rospy.loginfo(f"""Información enviada a los actuadores:
+                            Throttle = {control_msg.throttle} 
+                            Brake = {control_msg.brake} 
+                            Steering = {control_msg.steering}""")
         
             # Publicar los comandos
             self.publish(control_msg)

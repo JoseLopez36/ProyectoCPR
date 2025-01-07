@@ -1,3 +1,3 @@
 std_msgs/Header header
 float32 vel_lineal
-float32 vel_angular
+float32 steering
