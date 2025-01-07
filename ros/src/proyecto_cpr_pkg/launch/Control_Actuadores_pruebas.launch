@@ -1,0 +1,12 @@
+<launch>
+    <!--Nodo Controlador de actuadores-->
+    <node name="controlador_actuadores" type="controlador_actuadores.py" pkg="proyecto_cpr_pkg" output="screen"/>
+
+    <!-- Nodo rqt_plot -->
+    <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot_car_state" output="screen">
+        <!-- Argumento que especifica el topic y campo -->
+        <param name="topics" value="/airsim_node/PhysXCar/car_state/speed , /airsim_node/PhysXCar/car_cmd/throttle , /airsim_node/PhysXCar/car_cmd/brake"/>
+
+        <env name="DISPLAY" value="172.23.16.1:0"/>
+    </node>
+</launch>

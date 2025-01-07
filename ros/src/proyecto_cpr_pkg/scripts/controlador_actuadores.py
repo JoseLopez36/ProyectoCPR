@@ -12,27 +12,32 @@ class ControladorActuadores:
         rospy.init_node('controlador_actuadores')
 
         # Suscriptores
-        rospy.Subscriber('/cmd_actuadores', cpr.CmdActuadores, self.cmd_actuadores_callback)       
-        rospy.Subscriber('/airsim_node/car_1/car_state', air.CarState, self.state_callback)
+        rospy.Subscriber('/actuadores_cmd', cpr.CmdActuadores, self.cmd_actuadores_callback)       
+        rospy.Subscriber('/airsim_node/PhysXCar/car_state', air.CarState, self.state_callback)
 
         # Publicadores
         self.pub_control = rospy.Publisher(
-            '/airsim_node/car_1/car_cmd', 
+            '/airsim_node/PhysXCar/car_cmd', 
             air.CarControls,
             queue_size=10
         )
 
         # Variables miembro
         self.vel_lineal_deseada = 0.0   # (std_msgs/float32)
-        self.vel_angular_deseada = 0.0  # (std_msgs/float32)
+        #self.vel_angular_deseada = 0.0  # (std_msgs/float32)
         self.vel_lineal_actual = None    # (std_msgs/float32)
-        self.twist_actual = None               # (geometry_msgs/Twist)
+        #self.twist_actual = None               # (geometry_msgs/Twist)
+        self.rpm_actual = 0.0
+
+        #Aceleraciones máxima y mínima
+        self.maxacc = 1.0
+        self.minacc = -1.0
 
         # Parámetros
-        self.Kp = 500.0
-        self.Ti = 2.0
-        self.Td = 50.0     
-        self.Tm = 1.0           # s . Tiempo de muestro de la llamada al controlador. No debe ser menor que la actualización del estado
+        self.Kp = 3.0
+        self.Ti = 1.0
+        self.Td = 0.1     
+        self.Tm = 0.05           # s . Tiempo de muestro de la llamada al controlador. No debe ser menor que la actualización del estado
         
         #variables estaticas del controlador pid
         self.ek_2 = 0.0
@@ -44,7 +49,7 @@ class ControladorActuadores:
 
 
         #Llamada a funcion controlador de manera periodica al controlador. Con periodo de muestro independiente de la frecuencia del sensor
-        self.timer = rospy.Timer(rospy.Duration(self.Tm),self.control_callback,oneshot=False)   
+        #self.timer = rospy.Timer(rospy.Duration(self.Tm),self.control_callback,oneshot=False)   
         
         rospy.on_shutdown(self.shutdown)
         
@@ -56,7 +61,7 @@ class ControladorActuadores:
 
     def shutdown(self):                     # Apagar controlador
         rospy.loginfo("Apagando controlador de actuadores")
-        self.timer.shutdown()  
+        #self.timer.shutdown()  
         rospy.sleep(self.Tm)
         # Publicar ultimo mensaje con acceleración nula
         self.pub_control.publish(air.CarControls())
@@ -77,12 +82,16 @@ class ControladorActuadores:
         
         # Extraer la información del estado del coche
         self.vel_lineal_actual = state_msg.speed              # Magnitud de la velocidad actual del coche
-        self.twist_actual = state_msg.twist                          # Twist actual del coche
+        #self.twist_actual = state_msg.twist                          # Twist actual del coche
+        self.rpm_actual = state_msg.rpm 
 
-    def control_callback(self,timerEvent):
+        self.control_callback() 
+
+    def control_callback(self):
+    #def control_callback(self,timerEvent):
         if self.vel_lineal_actual is not None:
             rospy.loginfo(f"Car's current speed is: {self.vel_lineal_actual} m/s") 
-
+            rospy.loginfo(f"Car's rpm are: {self.rpm_actual}") 
             #Prueba- medicion acceleracion real conseguida
             current_time = rospy.Time.now().to_sec()  
             dt = current_time - self.previous_time
@@ -95,7 +104,6 @@ class ControladorActuadores:
             self.previous_time = current_time
 
 
-            self.vel_lineal_deseada = 10.0      #Asignacion temporal para pruebas
             
             #Calculo de señal de control
             acceleration = self.pid(self.vel_lineal_deseada)
@@ -119,13 +127,12 @@ class ControladorActuadores:
                 control_msg.throttle = 0.0
 
             rospy.loginfo(f"Información enviada a los actuadores:\n Throttle = {control_msg.throttle} \n Brake = {control_msg.brake}")
-           
-
+        
             # Publicar los comandos
             self.publish(control_msg)
 
     def pid(self,vd:float)->float:               #Implementacón de un controlador PID
-        #Aproximación de Euler II
+        #Aproximación de Euler II incremental
         q0=self.Kp*(1+(self.Tm/self.Ti)+(self.Td/self.Tm))
         q1=self.Kp*(-1-2*(self.Td/self.Tm))
         q2=self.Kp*self.Td/self.Tm
@@ -137,26 +144,19 @@ class ControladorActuadores:
         #Ley de control
         uk = self.uk_1 + q0*ek + q1*self.ek_1 + q2*self.ek_2
         a = uk
+
         #Saturación de la señal de control - aceleracion
-        #if a > self.maxac:
-        #    a = self.maxac
-        #elif a < self.minac:
-        #    a = self.minac
+        if a > self.maxacc:
+            a = self.maxacc
+        elif a < self.minacc:
+            a = self.minacc
 
 
         #Actualizacion de variables
         self.ek_2 = self.ek_1
         self.ek_1 = ek
-        self.uk_1 = uk 
+        self.uk_1 = a 
 
-      
-        
-
-        
-
-                #Necesita un algoritmo de anti-wind-up
-
-                #A de equilibrio?
         return a
 
 if __name__ == '__main__':
