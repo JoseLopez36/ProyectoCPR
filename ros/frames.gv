@@ -1,0 +1,22 @@
+digraph G {
+"world_ned" -> "car_1"[label="Broadcaster: /airsim_node\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 1736507966.792 sec old)\nBuffer length: 0.000 sec\n"];
+"car_1/odom_local_ned" -> "front_center_custom_body/static"[label="Broadcaster: /airsim_node\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 1736507966.792 sec old)\nBuffer length: 0.000 sec\n"];
+"car_1" -> "car_1/odom_local_ned"[label="Broadcaster: /airsim_node\nAverage rate: 83.860 Hz\nMost recent transform: 1736507964.134 ( 2.659 sec old)\nBuffer length: 2.337 sec\n"];
+"car_1/odom_local_ned" -> "front_center_custom_optical/static"[label="Broadcaster: /airsim_node\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 1736507966.792 sec old)\nBuffer length: 0.000 sec\n"];
+"car_1/odom_local_ned" -> "front_left_custom_body/static"[label="Broadcaster: /airsim_node\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 1736507966.792 sec old)\nBuffer length: 0.000 sec\n"];
+"car_1/odom_local_ned" -> "front_left_custom_optical/static"[label="Broadcaster: /airsim_node\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 1736507966.792 sec old)\nBuffer length: 0.000 sec\n"];
+"car_1/odom_local_ned" -> "front_right_custom_body/static"[label="Broadcaster: /airsim_node\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 1736507966.792 sec old)\nBuffer length: 0.000 sec\n"];
+"car_1/odom_local_ned" -> "front_right_custom_optical/static"[label="Broadcaster: /airsim_node\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 1736507966.792 sec old)\nBuffer length: 0.000 sec\n"];
+"car_1/odom_local_ned" -> "car_1/LidarCustom"[label="Broadcaster: /airsim_node\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 1736507966.792 sec old)\nBuffer length: 0.000 sec\n"];
+"car_1" -> "front_left_custom_body"[label="Broadcaster: /airsim_node\nAverage rate: 13.280 Hz\nMost recent transform: 1736507964.018 ( 2.775 sec old)\nBuffer length: 2.259 sec\n"];
+"car_1" -> "front_left_custom_optical"[label="Broadcaster: /airsim_node\nAverage rate: 13.280 Hz\nMost recent transform: 1736507964.018 ( 2.775 sec old)\nBuffer length: 2.259 sec\n"];
+"car_1" -> "front_right_custom_body"[label="Broadcaster: /airsim_node\nAverage rate: 6.669 Hz\nMost recent transform: 1736507964.090 ( 2.702 sec old)\nBuffer length: 2.249 sec\n"];
+"car_1" -> "front_right_custom_optical"[label="Broadcaster: /airsim_node\nAverage rate: 6.669 Hz\nMost recent transform: 1736507964.090 ( 2.702 sec old)\nBuffer length: 2.249 sec\n"];
+"world_ned" -> "world_enu"[label="Broadcaster: /ned_to_enu_pub\nAverage rate: 10.445 Hz\nMost recent transform: 1736507964.174 ( 2.619 sec old)\nBuffer length: 2.202 sec\n"];
+"car_1" -> "front_center_custom_body"[label="Broadcaster: /airsim_node\nAverage rate: 6.703 Hz\nMost recent transform: 1736507963.973 ( 2.820 sec old)\nBuffer length: 2.089 sec\n"];
+"car_1" -> "front_center_custom_optical"[label="Broadcaster: /airsim_node\nAverage rate: 6.703 Hz\nMost recent transform: 1736507963.973 ( 2.820 sec old)\nBuffer length: 2.089 sec\n"];
+edge [style=invis];
+ subgraph cluster_legend { style=bold; color=black; label ="view_frames Result";
+"Recorded at time: 1736507966.792"[ shape=plaintext ] ;
+ }->"world_ned";
+}

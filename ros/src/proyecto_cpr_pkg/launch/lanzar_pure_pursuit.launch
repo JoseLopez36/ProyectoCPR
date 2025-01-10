@@ -1,0 +1,11 @@
+<launch>
+    <!-- Iniciar Planificador Local -->
+    <node pkg="proyecto_cpr_pkg" type="planificador_local.py" name="planificador_local" />
+
+    <!-- Iniciar Control de Movimiento -->
+    <node pkg="proyecto_cpr_pkg" type="controlador_pure_pursuit.py" name="controlador_pure_pursuit" output="screen" />
+
+    <!-- Iniciar Control de Actuadores -->
+    <node pkg="proyecto_cpr_pkg" type="controlador_actuadores.py" name="controlador_actuadores" />
+</launch>
+

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import math
+
 import rospy
 import geometry_msgs.msg as geo
 import std_msgs.msg as std
@@ -12,7 +14,7 @@ class ControladorActuadores:
         rospy.init_node('controlador_actuadores')
 
         # Suscriptores
-        rospy.Subscriber('/actuadores_cmd', cpr.CmdActuadores, self.cmd_actuadores_callback)       
+        rospy.Subscriber('/cmd_actuadores', cpr.CmdActuadores, self.cmd_actuadores_callback)       
         rospy.Subscriber('/airsim_node/car_1/car_state', air.CarState, self.state_callback)
 
         # Publicadores
@@ -96,7 +98,7 @@ class ControladorActuadores:
             dt = current_time - self.previous_time
             if dt > 0:
                 acc_real = (self.vel_lineal_actual -  self.previous_velocity)/dt
-            rospy.loginfo(f"Car's true acceleration is: {acc_real} m/s") 
+                rospy.loginfo(f"Car's true acceleration is: {acc_real} m/s") 
             self.previous_velocity = self.vel_lineal_actual
             self.previous_time = current_time
             
@@ -112,7 +114,7 @@ class ControladorActuadores:
             control_msg.handbrake = False
             control_msg.gear_immediate = True
 
-            control_msg.steering = self.steering_deseado
+            control_msg.steering = -self.steering_deseado / (math.pi/4)
 
             if acceleration >= 0:
                 control_msg.throttle = acceleration

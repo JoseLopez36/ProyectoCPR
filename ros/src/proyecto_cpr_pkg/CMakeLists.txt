@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   move_base
   tf2_ros
   geometry_msgs
+  visualization_msgs
 )
 
 add_message_files(

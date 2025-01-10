@@ -1,15 +1,17 @@
 Panels:
   - Class: rviz/Displays
-    Help Height: 78
+    Help Height: 52
     Name: Displays
     Property Tree Widget:
       Expanded:
+        - /Global Options1
         - /TF1
         - /TF1/Frames1
-        - /Odometry1/Shape1
-        - /PointCloud21
-      Splitter Ratio: 0.5051546096801758
-    Tree Height: 847
+        - /Path1
+        - /Marker1
+        - /Marker1/Namespaces1
+      Splitter Ratio: 0.5025210380554199
+    Tree Height: 899
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -25,10 +27,9 @@ Panels:
     Name: Views
     Splitter Ratio: 0.5
   - Class: rviz/Time
-    Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: PointCloud2
+    SyncSource: ""
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -56,178 +57,120 @@ Visualization Manager:
       Value: true
     - Class: rviz/TF
       Enabled: true
+      Filter (blacklist): ""
+      Filter (whitelist): ""
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        drone_1:
+        car_1:
           Value: true
-        drone_1/LidarCustom:
-          Value: true
-        drone_1/odom_local_enu:
+        car_1/LidarCustom:
+          Value: false
+        car_1/odom_local_ned:
           Value: true
         front_center_custom_body:
           Value: false
         front_center_custom_body/static:
-          Value: true
+          Value: false
         front_center_custom_optical:
-          Value: true
+          Value: false
         front_center_custom_optical/static:
-          Value: true
+          Value: false
         front_left_custom_body:
           Value: false
         front_left_custom_body/static:
-          Value: true
+          Value: false
         front_left_custom_optical:
-          Value: true
+          Value: false
         front_left_custom_optical/static:
-          Value: true
+          Value: false
         front_right_custom_body:
           Value: false
         front_right_custom_body/static:
-          Value: true
-        front_right_custom_optical:
-          Value: true
-        front_right_custom_optical/static:
-          Value: true
-        world_enu:
           Value: false
-        world_ned:
+        front_right_custom_optical:
+          Value: false
+        front_right_custom_optical/static:
+          Value: false
+        world_enu:
           Value: true
-      Marker Scale: 1
+        world_ned:
+          Value: false
+      Marker Alpha: 1
+      Marker Scale: 30
       Name: TF
-      Show Arrows: true
+      Show Arrows: false
       Show Axes: true
       Show Names: true
       Tree:
         world_ned:
+          car_1:
+            car_1/odom_local_ned:
+              car_1/LidarCustom:
+                {}
+              front_center_custom_body/static:
+                {}
+              front_center_custom_optical/static:
+                {}
+              front_left_custom_body/static:
+                {}
+              front_left_custom_optical/static:
+                {}
+              front_right_custom_body/static:
+                {}
+              front_right_custom_optical/static:
+                {}
+            front_center_custom_body:
+              {}
+            front_center_custom_optical:
+              {}
+            front_left_custom_body:
+              {}
+            front_left_custom_optical:
+              {}
+            front_right_custom_body:
+              {}
+            front_right_custom_optical:
+              {}
           world_enu:
-            drone_1:
-              drone_1/odom_local_enu:
-                drone_1/LidarCustom:
-                  {}
-                front_center_custom_body/static:
-                  {}
-                front_center_custom_optical/static:
-                  {}
-                front_left_custom_body/static:
-                  {}
-                front_left_custom_optical/static:
-                  {}
-                front_right_custom_body/static:
-                  {}
-                front_right_custom_optical/static:
-                  {}
-              front_center_custom_body:
-                {}
-              front_center_custom_optical:
-                {}
-              front_left_custom_body:
-                {}
-              front_left_custom_optical:
-                {}
-              front_right_custom_body:
-                {}
-              front_right_custom_optical:
-                {}
+            {}
       Update Interval: 0
       Value: true
     - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz/PointCloud2
-      Color: 255; 255; 255
-      Color Transformer: RGB8
-      Decay Time: 0
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 25; 255; 0
       Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 4096
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: front_left_depth_planar_registered_point_cloud
-      Position Transformer: XYZ
+      Head Diameter: 0.30000001192092896
+      Head Length: 0.20000000298023224
+      Length: 0.30000001192092896
+      Line Style: Billboards
+      Line Width: 0.05999999865889549
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
       Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.10000000149011612
-      Style: Flat Squares
-      Topic: /airsim_node/front_left_custom/DepthPlanar/registered/points
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: true
-    - Angle Tolerance: 0.10000000149011612
-      Class: rviz/Odometry
-      Covariance:
-        Orientation:
-          Alpha: 0.5
-          Color: 255; 255; 127
-          Color Style: Unique
-          Frame: Local
-          Offset: 1
-          Scale: 1
-          Value: true
-        Position:
-          Alpha: 0.30000001192092896
-          Color: 204; 51; 204
-          Scale: 1
-          Value: true
-        Value: true
-      Enabled: true
-      Keep: 25
-      Name: Odometry
-      Position Tolerance: 0.10000000149011612
-      Shape:
-        Alpha: 1
-        Axes Length: 1
-        Axes Radius: 0.10000000149011612
-        Color: 255; 25; 0
-        Head Length: 0.20000000298023224
-        Head Radius: 0.05000000074505806
-        Shaft Length: 0.20000000298023224
-        Shaft Radius: 0.019999999552965164
-        Value: Arrow
-      Topic: /airsim_node/MyQuad/odom_local_ned
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.10000000149011612
+      Shaft Length: 0.10000000149011612
+      Topic: /trayectoria_local
       Unreliable: false
       Value: true
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz/PointCloud2
-      Color: 255; 255; 255
-      Color Transformer: Intensity
-      Decay Time: 0
+    - Class: rviz/Marker
       Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 4096
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: PointCloud2
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.009999999776482582
-      Style: Flat Squares
-      Topic: /airsim_node/drone_1/lidar/LidarCustom
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
+      Marker Topic: /pure_pursuit_vis
+      Name: Marker
+      Namespaces:
+        lookahead_point: true
+      Queue Size: 100
       Value: true
   Enabled: true
   Global Options:
-    Background Color: 48; 48; 48
+    Background Color: 85; 85; 127
     Default Light: true
     Fixed Frame: world_enu
     Frame Rate: 30
@@ -253,25 +196,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 34.531036376953125
+      Distance: 266.8310852050781
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
+      Field of View: 0.7853981852531433
       Focal Point:
-        X: 0.08613172918558121
-        Y: 0.2811238765716553
-        Z: -0.7929707169532776
+        X: 51.992584228515625
+        Y: 67.71902465820312
+        Z: 29.036645889282227
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.34479764103889465
+      Pitch: 1.5547964572906494
       Target Frame: world_view
-      Value: Orbit (rviz)
-      Yaw: 3.170380115509033
+      Yaw: 4.717204570770264
     Saved: ~
 Window Geometry:
   Displays:
@@ -279,7 +222,7 @@ Window Geometry:
   Height: 1138
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd000000040000000000000255000003d8fc020000000cfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afc0000003b000003d8000000c700fffffffa000000010100000002fb0000002000630061006d005f00660072006f006e0074005f00630065006e0074006500720000000000ffffffff0000000000000000fb000000100044006900730070006c0061007900730100000000000001a60000015600fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d006500720061010000038f000000160000000000000000fb0000003600630061006d005f00660072006f006e0074005f006c006500660074005f00640065007000740068005f0070006c0061006e006100720200000af40000014e0000031c00000231fb0000001c00630061006d005f00660072006f006e0074005f006c0065006600740200000ac00000010f000002d700000196fb0000001e00630061006d005f00660072006f006e0074005f007200690067006800740200000b400000017000000286000001a7000000010000010f000003d8fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003b000003d8000000a000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000077e0000003efc0100000002fb0000000800540069006d006501000000000000077e0000024400fffffffb0000000800540069006d006501000000000000045000000000000000000000040e000003d800000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd000000040000000000000255000003eafc020000000cfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000004a00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afc0000002e000003ea0000009b00fffffffa000000010100000002fb0000002000630061006d005f00660072006f006e0074005f00630065006e0074006500720000000000ffffffff0000000000000000fb000000100044006900730070006c0061007900730100000000000001a60000015000fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d006500720061010000038f000000160000000000000000fb0000003600630061006d005f00660072006f006e0074005f006c006500660074005f00640065007000740068005f0070006c0061006e006100720200000af40000014e0000031c00000231fb0000001c00630061006d005f00660072006f006e0074005f006c0065006600740200000ac00000010f000002d700000196fb0000001e00630061006d005f00660072006f006e0074005f007200690067006800740200000b400000017000000286000001a7000000010000010f000003eafc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000002e000003ea0000008400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000077e0000003efc0100000002fb0000000800540069006d006501000000000000077e0000026c00fffffffb0000000800540069006d0065010000000000000450000000000000000000000412000003ea00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -289,5 +232,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1918
-  X: 1050
-  Y: 278
+  X: 1342
+  Y: 212
