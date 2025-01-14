@@ -54,7 +54,7 @@ Para iniciar el contenedor, arrancar Docker Desktop y desde el directorio raíz 
 
 Esto correrá el contenedor con la imagen construida anteriormente y montará el volumen correspondiente. Una vez esté corriendo, tendrás acceso a un shell dentro del contenedor. Este paso debe repetirse cada vez que se quiera iniciar el contenedor.
 
-### Paso 5. Construir AirSim
+### Paso 5. Construir y configurar AirSim
 
 Una vez dentro del contenedor, construye AirSim:
 ```bash
@@ -62,6 +62,11 @@ cd ~/ProyectoCPR/external/AirSim
 ./setup.sh
 ./build.sh
 ```
+
+Para configurar AirSim es necesario realizar los siguientes pasos:
+1. Crear la carpeta `AirSim ` en `Documentos`.
+2. Pegar en esa carpeta el archivo `settings.json` presente en la raíz de este repositorio.
+3. (opcional) Modificar archivo `settings.json` si se desea para cambiar sensores, vehículos...
 
 ### Paso 6. Construir el workspace de ROS
 
