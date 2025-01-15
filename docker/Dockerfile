@@ -31,6 +31,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
     # *************** PAQUETES DEL PROYECTO ****************** \   
     ros-noetic-pcl-ros \
     ros-noetic-move-base \
+    ros-noetic-plotjuggler \
+    ros-noetic-plotjuggler-ros \
     # ******************************************************** \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*

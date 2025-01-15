@@ -5,7 +5,7 @@
     <!-- Nodo rqt_plot -->
     <node pkg="rqt_plot" type="rqt_plot" name="rqt_plot_car_state" output="screen">
         <!-- Argumento que especifica el topic y campo -->
-        <param name="topics" value="/airsim_node/PhysXCar/car_state/speed , /airsim_node/PhysXCar/car_cmd/throttle , /airsim_node/PhysXCar/car_cmd/brake"/>
+        <param name="topics" value="/airsim_node/car_1/car_state/speed,/airsim_node/car_1/car_cmd/throttle,/airsim_node/car_1/car_cmd/brake"/>
 
         <env name="DISPLAY" value="172.23.16.1:0"/>
     </node>
