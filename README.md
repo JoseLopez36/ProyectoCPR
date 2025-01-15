@@ -1,8 +1,8 @@
-# ProyectoCPR
+# ProyectoCPR: Implementación y Simulación de un Sistema de Navegación Autónoma para Vehículos Terrestres
 
-## Instalación de AirSim junto a ROS en Docker (Ubuntu 20.04)
+## Instalación de AirSim junto a ROS en Docker (Windows 10 y 11)
 
-Este repositorio contiene los archivos necesarios para configurar un contenedor Docker que ejecute AirSim y ROS. A continuación, se describen los pasos para su instalación y puesta en marcha.
+Este repositorio contiene los archivos necesarios para configurar un contenedor Docker que ejecute `AirSim` y `ROS` en `Windows`. A continuación, se describen los pasos para su instalación y puesta en marcha.
 
 ### Prerequisitos
 
@@ -54,7 +54,7 @@ Para iniciar el contenedor, arrancar Docker Desktop y desde el directorio raíz 
 
 Esto correrá el contenedor con la imagen construida anteriormente y montará el volumen correspondiente. Una vez esté corriendo, tendrás acceso a un shell dentro del contenedor. Este paso debe repetirse cada vez que se quiera iniciar el contenedor.
 
-### Paso 5. Construir AirSim
+### Paso 5. Construir y configurar AirSim
 
 Una vez dentro del contenedor, construye AirSim:
 ```bash
@@ -62,6 +62,11 @@ cd ~/ProyectoCPR/external/AirSim
 ./setup.sh
 ./build.sh
 ```
+
+Para configurar AirSim es necesario realizar los siguientes pasos:
+1. Crear la carpeta `AirSim ` en `Documentos`.
+2. Pegar en esa carpeta el archivo `settings.json` presente en la raíz de este repositorio.
+3. (opcional) Modificar archivo `settings.json` si se desea para cambiar sensores, vehículos...
 
 ### Paso 6. Construir el workspace de ROS
 
