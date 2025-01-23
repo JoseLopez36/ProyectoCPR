@@ -2,7 +2,7 @@
 
 ## Instalación de AirSim junto a ROS en Docker (Windows 10 y 11)
 
-Este repositorio contiene los archivos necesarios para configurar un contenedor Docker que ejecute `AirSim` y `ROS` en `Windows`. A continuación, se describen los pasos para su instalación y puesta en marcha.
+Este repositorio contiene los archivos necesarios para configurar un contenedor Docker que ejecute `AirSim` y `ROS` en `Windows`. A continuación, se describen los pasos para su instalación y puesta en marcha. Para más información: [How to use AirSim with Robot Operating System (ROS)](https://cosys-lab.github.io/ros_python/)
 
 ### Prerequisitos
 
