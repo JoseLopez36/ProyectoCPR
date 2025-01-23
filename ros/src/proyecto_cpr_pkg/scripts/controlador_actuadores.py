@@ -7,6 +7,7 @@ import geometry_msgs.msg as geo
 import std_msgs.msg as std
 import airsim_ros_pkgs.msg as air
 import proyecto_cpr_pkg.msg as cpr
+import time
 
 class ControladorActuadores:
     def __init__(self):
@@ -28,18 +29,19 @@ class ControladorActuadores:
         self.vel_lineal_deseada = 0.0    # (std_msgs/float32)
         self.steering_deseado = 0.0      # (std_msgs/float32)
         self.vel_lineal_actual = None    # (std_msgs/float32)
-       #self.rpm_actual = 0.0
+        #self.rpm_actual = 0.0
 
         #Aceleraciones máxima y mínima
         self.maxacc = 1.0
         self.minacc = -1.0
 
         # Parámetros
-        self.Kp = 3.0
-        self.Ti = 1.0
-        self.Td = 0.1     
-        self.Tm = 0.05           # s . Tiempo de muestro de la llamada al controlador. No debe ser menor que la actualización del estado
-        
+        self.Kp = 2.0               
+        self.Ti = 1.0               
+        self.Td = 0.01                   
+        self.Tm = 0.05              # s . Tiempo de muestro de la llamada al controlador. No debe ser menor que la actualización del estado
+        self.T_real = 0.0           # s . Medición del tiempo entre callback del topic estado
+
         #variables estaticas del controlador pid
         self.ek_2 = 0.0
         self.ek_1 = 0.0
@@ -47,13 +49,13 @@ class ControladorActuadores:
 
         self.previous_velocity = 0.0
         self.previous_time = 0.0
+        self.now = time.perf_counter()          #Guardar espacio al timer
 
-
-        #Llamada a funcion controlador de manera periodica al controlador. Con periodo de muestro independiente de la frecuencia del sensor
+        #Llamada a funcion controlador de manera periodica al controlador.
         #self.timer = rospy.Timer(rospy.Duration(self.Tm),self.control_callback,oneshot=False)   
         
         rospy.on_shutdown(self.shutdown)
-        
+
         rospy.loginfo("Controlador de actuadores inicializado.")
 
     
@@ -63,7 +65,7 @@ class ControladorActuadores:
     def shutdown(self):                     # Apagar controlador
         rospy.loginfo("Apagando controlador de actuadores")
         #self.timer.shutdown()  
-        rospy.sleep(self.Tm)
+        rospy.sleep(0.05)
         # Publicar ultimo mensaje con acceleración nula
         self.pub_control.publish(air.CarControls())
         rospy.loginfo("Information pass to the vehicle:\n Throttle = 0.0  \n Brake = 0.0 ")
@@ -75,17 +77,18 @@ class ControladorActuadores:
     def cmd_actuadores_callback(self, msg : cpr.CmdActuadores):
         # Extraer la información de velocidad y dirección
         self.vel_lineal_deseada = msg.vel_lineal      # Magnitud de la velocidad lineal deseada
-        self.steering_deseado = msg.steering          #Magnitud ángulo de giro de las ruedas deseado
+        self.steering_deseado = msg.steering          # Magnitud ángulo de giro de las ruedas deseado
         
-
     def state_callback(self, state_msg : air.CarState):
-        
-        
         # Extraer la información del estado del coche
         self.vel_lineal_actual = state_msg.speed              # Magnitud de la velocidad actual del coche
         self.rpm_actual = state_msg.rpm 
+        self.T_real = time.perf_counter() - self.now          # Periodo de tiempo real de medición
+        self.now = time.perf_counter()  
 
-        self.control_callback() 
+        rospy.loginfo(f"Periodo real = {self.T_real}")
+
+        self.control_callback()
 
     def control_callback(self):
     #def control_callback(self,timerEvent):
@@ -94,13 +97,13 @@ class ControladorActuadores:
             rospy.loginfo(f"Car's rpm are: {self.rpm_actual}") 
 
             #Prueba- medicion acceleracion real conseguida
-            current_time = rospy.Time.now().to_sec()  
-            dt = current_time - self.previous_time
-            if dt > 0:
-                acc_real = (self.vel_lineal_actual -  self.previous_velocity)/dt
-                rospy.loginfo(f"Car's true acceleration is: {acc_real} m/s") 
-            self.previous_velocity = self.vel_lineal_actual
-            self.previous_time = current_time
+            #current_time = rospy.Time.now().to_sec()  
+            #dt = current_time - self.previous_time
+            #if dt > 0:
+            #    acc_real = (self.vel_lineal_actual -  self.previous_velocity)/dt
+            #    rospy.loginfo(f"Car's true acceleration is: {acc_real} m/s") 
+            #self.previous_velocity = self.vel_lineal_actual
+            #self.previous_time = current_time
             
             #Calculo de señal de control
             acceleration = self.pid(self.vel_lineal_deseada)
@@ -133,9 +136,9 @@ class ControladorActuadores:
 
     def pid(self,vd:float)->float:               #Implementacón de un controlador PID
         #Aproximación de Euler II incremental
-        q0=self.Kp*(1+(self.Tm/self.Ti)+(self.Td/self.Tm))
-        q1=self.Kp*(-1-2*(self.Td/self.Tm))
-        q2=self.Kp*self.Td/self.Tm
+        q0=self.Kp*(1+(self.T_real/self.Ti)+(self.Td/self.T_real))
+        q1=self.Kp*(-1-2*(self.Td/self.T_real))
+        q2=self.Kp*self.Td/self.T_real
 
         #Calculo del error
         ek = vd - self.vel_lineal_actual
