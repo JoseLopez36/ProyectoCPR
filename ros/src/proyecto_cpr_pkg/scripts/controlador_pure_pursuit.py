@@ -45,7 +45,7 @@ class ControladorPurePursuit:
             max_acc = 2.0,          # Aceleración máxima [m/s^2] (moderada para ciudad)
             max_brake = 4.0,        # Frenada máxima [m/s^2] (más alta para seguridad)
             max_lat_acc = 3.0,      # Aceleración lateral máxima [m/s^2]
-            max_steer = 0.61,        # ~35° en rad (recomendado: 30° a 40°)
+            max_steer = 0.61,       # ~35° en rad (recomendado: 30° a 40°)
             max_steer_change = 0.52 # ~30°/s en rad/s (recomendado: 20°/s a 120°/s)
         )
         self.algo_params = AlgorithmParams(
@@ -314,7 +314,7 @@ class ControladorPurePursuit:
         # 4. Si se recorrió todo el path y no se superó lookahead_dist, devolvemos el último punto para evitar índices fuera de rango.
         return geo.Point(prev_x, prev_y, 0.0)
 
-    def compute_steering(self, curr_position, target_position, curr_steering):
+    def compute_steering(self, curr_position, target_position, curr_steering, lookahead_dist):
         """
         Calcula el ángulo de giro del vehículo y suaviza la salida aplicando un suavizado trapezoidal.
 
@@ -322,23 +322,32 @@ class ControladorPurePursuit:
             curr_position (geometry_msgs/Point): Posición actual del vehículo en el marco del path [m].
             target_position (geometry_msgs/Point): Posición actual del punto objetivo en el marco del path [m].
             curr_steering (float): Ángulo de dirección actual del vehículo [rad].
+            lookahead_dist(float): Distancia de lookahead deseada [m].
 
         Returns:
             smooth_target_steering (float): Ángulo de dirección objetivo suavizado [rad].
-        """
+        """                                                                                                         
         # Calcular el ángulo entre la dirección actual y la dirección hacia el punto
-        alpha = math.atan2(target_position.y - curr_position.y, target_position.x - curr_position.x) - curr_steering
-        
+        alpha = math.atan2(
+            target_position.y - curr_position.y, 
+            target_position.x - curr_position.x
+            ) - curr_steering
+
         # Calcular el ángulo de dirección (steering) mediante la fórmula de Pure Pursuit
         target_steering = math.atan2(2 * self.vehicle_params.wheelbase * math.sin(alpha), lookahead_dist)
 
         # Ajustar al rango permitido
-        target_steering = min(max(self.target_steering, -self.vehicle_params.max_steer), self.vehicle_params.max_steer)
+        target_steering = min(max(target_steering, -self.vehicle_params.max_steer), self.vehicle_params.max_steer)
 
         # Aplicar suavizado para mejorar la respuesta del vehículo ante cambios bruscos
-        smooth_target_steering = self.trapezoidal_smoothing(curr_steering, target_steering, self.vehicle_params.max_steer_change, self.vehicle_params.max_steer_change)
+        smooth_target_steering = self.trapezoidal_smoothing(
+            curr_steering,                         # Ángulo actual de dirección
+            target_steering,                       # Ángulo objetivo
+            self.vehicle_params.max_steer_change,  # Tasa máxima de cambio (subida)
+            self.vehicle_params.max_steer_change   # Tasa máxima de cambio (bajada)
+        )
 
-        return smooth_target_steering
+        return target_steering
 
     def run_pure_pursuit(self):
         """
@@ -441,7 +450,7 @@ class ControladorPurePursuit:
             lookahead_dist
         )
         # Cálculo del ángulo de dirección
-        self.target_steering = self.compute_steering(vehicle_pos, self.lookahead_point, vehicle_yaw)
+        self.target_steering = self.compute_steering(vehicle_pos, self.lookahead_point, vehicle_yaw, lookahead_dist)
 
         # Construir los comandos para el controlador de bajo nivel
         cmd = cpr.CmdActuadores()
