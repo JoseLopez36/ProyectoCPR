@@ -32,6 +32,7 @@ class ControladorPurePursuit:
         # Entrada
         self.current_pose = None    # (geometry_msgs/PoseStamped)
         self.current_speed = 0.0
+        self.current_steering = 0.0
         self.path = None            # (nav_msgs/Path)
         # Salida
         self.target_speed = 0.0
@@ -59,6 +60,7 @@ class ControladorPurePursuit:
 
         # Suscriptores
         rospy.Subscriber('/airsim_node/car_1/car_state', air.CarState, self.state_callback)
+        rospy.Subscriber('/airsim_node/car_1/car_cmd', air.CarControls, self.controls_callback)
         rospy.Subscriber('/trayectoria_local', nav.Path, self.path_callback)
 
         # Publicadores
@@ -81,6 +83,10 @@ class ControladorPurePursuit:
         self.current_pose.header = msg.header
         self.current_pose.pose = msg.pose.pose  # Pose actual del coche
         self.current_speed = msg.speed          # Velocidad actual del coche
+
+    def controls_callback(self, msg):
+        # Extraer la información de los controles del coche
+        self.current_steering = -msg.steering * (math.pi/4)  # Negativo para pasar de NED a ENU. Se desnormaliza
 
     def path_callback(self, msg):
         # Extraer la información de la trayectoria recibida
@@ -314,13 +320,14 @@ class ControladorPurePursuit:
         # 4. Si se recorrió todo el path y no se superó lookahead_dist, devolvemos el último punto para evitar índices fuera de rango.
         return geo.Point(prev_x, prev_y, 0.0)
 
-    def compute_steering(self, curr_position, target_position, curr_steering, lookahead_dist):
+    def compute_steering(self, curr_position, target_position, curr_vehicle_yaw, curr_steering, lookahead_dist):
         """
         Calcula el ángulo de giro del vehículo y suaviza la salida aplicando un suavizado trapezoidal.
 
         Args:
             curr_position (geometry_msgs/Point): Posición actual del vehículo en el marco del path [m].
             target_position (geometry_msgs/Point): Posición actual del punto objetivo en el marco del path [m].
+            curr_vehicle_yaw (float): Orientación actual del vehículo [rad].
             curr_steering (float): Ángulo de dirección actual del vehículo [rad].
             lookahead_dist(float): Distancia de lookahead deseada [m].
 
@@ -331,10 +338,10 @@ class ControladorPurePursuit:
         alpha = math.atan2(
             target_position.y - curr_position.y, 
             target_position.x - curr_position.x
-            ) - curr_steering
+            ) - curr_vehicle_yaw
 
         # Calcular el ángulo de dirección (steering) mediante la fórmula de Pure Pursuit
-        target_steering = math.atan2(2 * self.vehicle_params.wheelbase * math.sin(alpha), lookahead_dist)
+        target_steering = math.atan2(2.0 * self.vehicle_params.wheelbase * math.sin(alpha), lookahead_dist)
 
         # Ajustar al rango permitido
         target_steering = min(max(target_steering, -self.vehicle_params.max_steer), self.vehicle_params.max_steer)
@@ -347,7 +354,7 @@ class ControladorPurePursuit:
             self.vehicle_params.max_steer_change   # Tasa máxima de cambio (bajada)
         )
 
-        return target_steering
+        return smooth_target_steering
 
     def run_pure_pursuit(self):
         """
@@ -450,7 +457,13 @@ class ControladorPurePursuit:
             lookahead_dist
         )
         # Cálculo del ángulo de dirección
-        self.target_steering = self.compute_steering(vehicle_pos, self.lookahead_point, vehicle_yaw, lookahead_dist)
+        self.target_steering = self.compute_steering(
+            vehicle_pos, 
+            self.lookahead_point, 
+            vehicle_yaw, 
+            self.current_steering, 
+            lookahead_dist
+        )
 
         # Construir los comandos para el controlador de bajo nivel
         cmd = cpr.CmdActuadores()

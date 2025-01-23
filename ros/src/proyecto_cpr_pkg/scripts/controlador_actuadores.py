@@ -114,7 +114,9 @@ class ControladorActuadores:
             control_msg.handbrake = False
             control_msg.gear_immediate = True
 
-            control_msg.steering = -self.steering_deseado / (math.pi/4)
+            # Cálculo de dirección. Negativo para pasar de ENU a NED. Además, se normaliza entre -1 y 1
+            control_msg.steering = -self.steering_deseado / (math.pi/4) 
+             
 
             if acceleration >= 0:
                 control_msg.throttle = acceleration
