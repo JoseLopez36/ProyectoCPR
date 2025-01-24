@@ -24,19 +24,28 @@ class ControladorActuadores:
             air.CarControls,
             queue_size=10
         )
+        #-----------debuging----------
+        self.pub_debug = rospy.Publisher(
+            '/debuging', 
+            cpr.debuging,
+            queue_size=10
+        )
+        #debuging-------------------
 
         # Variables miembro
         self.vel_lineal_deseada = 0.0    # (std_msgs/float32)
         self.steering_deseado = 0.0      # (std_msgs/float32)
         self.vel_lineal_actual = None    # (std_msgs/float32)
         #self.rpm_actual = 0.0
-
+        self.vel_act_filtrada = 0.0
+        self.vel_des_filtrada = 0.0
+        self.acc_filtrada = 0.0
         #Aceleraciones máxima y mínima
         self.maxacc = 1.0
         self.minacc = -1.0
 
         # Parámetros
-        self.Kp = 2.0               
+        self.Kp = 2.0                  #2.0               
         self.Ti = 1.0               
         self.Td = 0.01                   
         self.Tm = 0.05              # s . Tiempo de muestro de la llamada al controlador. No debe ser menor que la actualización del estado
@@ -60,7 +69,13 @@ class ControladorActuadores:
 
     
     def run(self):
-       rospy.spin()
+        try:
+            rospy.spin()
+        except rospy.ROSInterruptException:
+            pass
+        except Exception as e:
+            rospy.logerr(f"Error inesperado: {e}") 
+       
 
     def shutdown(self):                     # Apagar controlador
         rospy.loginfo("Apagando controlador de actuadores")
@@ -77,12 +92,17 @@ class ControladorActuadores:
     def cmd_actuadores_callback(self, msg : cpr.CmdActuadores):
         # Extraer la información de velocidad y dirección
         self.vel_lineal_deseada = msg.vel_lineal      # Magnitud de la velocidad lineal deseada
+
+        self.vel_des_filtrada = self.filter_LP(0.5 , self.vel_lineal_deseada, self.vel_des_filtrada)
         self.steering_deseado = msg.steering          # Magnitud ángulo de giro de las ruedas deseado
         
     def state_callback(self, state_msg : air.CarState):
         # Extraer la información del estado del coche
         self.vel_lineal_actual = state_msg.speed              # Magnitud de la velocidad actual del coche
         self.rpm_actual = state_msg.rpm 
+
+        self.vel_act_filtrada = self.filter_LP(0.5 , self.vel_lineal_actual, self.vel_act_filtrada)
+
         self.T_real = time.perf_counter() - self.now          # Periodo de tiempo real de medición
         self.now = time.perf_counter()  
 
@@ -106,7 +126,18 @@ class ControladorActuadores:
             #self.previous_time = current_time
             
             #Calculo de señal de control
-            acceleration = self.pid(self.vel_lineal_deseada)
+            #acceleration = self.pid(self.vel_lineal_deseada)
+            acceleration = self.pid(self.vel_des_filtrada)
+            self.acc_filtrada = self.filter_LP(0.5,acceleration,self.acc_filtrada)
+
+            #debuging -------------
+            debug_msg=cpr.debuging()
+            debug_msg.header.stamp = rospy.Time.now()
+            debug_msg.original = acceleration 
+            debug_msg.filtrada = self.acc_filtrada
+            #debug_msg.periodo_real = self.T_real
+            self.pub_debug.publish(debug_msg)
+            #debuging----------
 
             # Contrucción los mensaje de control de los actuadores
             control_msg = air.CarControls() 
@@ -120,10 +151,12 @@ class ControladorActuadores:
             control_msg.steering = -self.steering_deseado / (math.pi/4)
 
             if acceleration >= 0:
-                control_msg.throttle = acceleration
+                #control_msg.throttle = acceleration
+                control_msg.throttle = self.acc_filtrada
                 control_msg.brake = 0.0
             else:
-                control_msg.brake = - acceleration         #brake necesita ser positivo
+                #control_msg.brake = - acceleration         #brake necesita ser positivo
+                control_msg.brake = - self.acc_filtrada
                 control_msg.throttle = 0.0
 
             rospy.loginfo(f"""Información enviada a los actuadores:
@@ -141,7 +174,8 @@ class ControladorActuadores:
         q2=self.Kp*self.Td/self.T_real
 
         #Calculo del error
-        ek = vd - self.vel_lineal_actual
+        #ek = vd - self.vel_lineal_actual
+        ek = vd - self.vel_act_filtrada
         rospy.loginfo(f"Error : {ek}")                #Información para debugging
 
         #Ley de control
@@ -154,7 +188,7 @@ class ControladorActuadores:
         elif a < self.minacc:
             a = self.minacc
 
-
+        
         #Actualizacion de variables
         self.ek_2 = self.ek_1
         self.ek_1 = ek
@@ -162,11 +196,15 @@ class ControladorActuadores:
 
         return a
 
+    def filter_LP(self,alpha,X,Xf_1):
+        
+        Xf = alpha*X + (1-alpha)*Xf_1
+
+        return Xf 
+
 if __name__ == '__main__':
-    try:
-        # Crear instancia del nodo
-        controller = ControladorActuadores()
-        # Correr el nodo
-        controller.run()
-    except rospy.ROSInterruptException:
-        pass 
+    # Crear instancia del nodo
+    controller = ControladorActuadores()
+    # Correr el nodo
+    controller.run()
+    

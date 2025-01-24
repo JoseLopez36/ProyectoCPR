@@ -502,9 +502,14 @@ class ControladorPurePursuit:
         # Mantener el nodo en ejecución
         rate = rospy.Rate(10)  # 10 Hz
         self.T = 1/10          # Tiempo entre iteraciones
-        while not rospy.is_shutdown():
-            self.run_pure_pursuit()
-            rate.sleep()
+        
+        try:
+            while not rospy.is_shutdown():
+                self.run_pure_pursuit()
+        except Exception as e:
+            rospy.logerr(f"Error en pure_pursuit: {e}")
+        rate.sleep()
+
 
 if __name__ == '__main__':
     # Inicializar el nodo
