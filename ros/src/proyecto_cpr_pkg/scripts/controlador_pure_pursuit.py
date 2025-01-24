@@ -15,9 +15,9 @@ import proyecto_cpr_pkg.msg as cpr
 class VehicleParams(NamedTuple):
     wheelbase   : float                 # Longitud entre ejes [m]
     max_speed   : float                 # Velocidad máxima [m/s]
+    min_speed   : float                 # Velocidad mínima [m/s]
     max_acc     : float                 # Aceleración máxima [m/s^2]
     max_brake   : float                 # Capacidad de frenada máxima [m/s^2]
-    max_lat_acc : float                 # Aceleración lateral máxima tolerada [m/s^2]
     max_steer   : float                 # Angulo de dirección máximo [rad]
     max_steer_change : float            # Velocidad angular del ángulo de dirección máxima [rad/s]
 
@@ -38,20 +38,22 @@ class ControladorPurePursuit:
         self.target_speed = 0.0
         self.target_steering = 0.0
         self.lookahead_point = None
+        # Interno
+        self.integral_error = 0.0 # Error integral para el cálculo del ángulo de dirección
 
         # Parámetros
         self.vehicle_params = VehicleParams(
             wheelbase = 2.7,        # Distancia entre ejes [m], típico de un turismo compacto/medio
-            max_speed = 15.0,       # ~54 km/h, velocidad máxima aproximada en ciudad
-            max_acc = 2.0,          # Aceleración máxima [m/s^2] (moderada para ciudad)
-            max_brake = 4.0,        # Frenada máxima [m/s^2] (más alta para seguridad)
-            max_lat_acc = 3.0,      # Aceleración lateral máxima [m/s^2]
-            max_steer = 0.61,       # ~35° en rad (recomendado: 30° a 40°)
-            max_steer_change = 0.52 # ~30°/s en rad/s (recomendado: 20°/s a 120°/s)
+            max_speed = 20.0,       # 54 km/h, velocidad máxima aproximada en ciudad
+            min_speed = 3.0,        
+            max_acc = 2.5,          # Aceleración máxima [m/s^2] (moderada para ciudad)
+            max_brake = 1.5,        # Frenada máxima [m/s^2]
+            max_steer = math.pi/4,  # ~35° en ra d (recomendado: 30° a 40°)
+            max_steer_change = 0.5  # (recomendado: 20°/s a 120°/s)
         )
         self.algo_params = AlgorithmParams(
-            min_lookahead_dist = 3.0,  # [m] distancia mínima de lookahead
-            max_lookahead_dist = 15.0, # [m] distancia máxima de lookahead
+            min_lookahead_dist = 1.5,  # [m] distancia mínima de lookahead
+            max_lookahead_dist = 10.0, # [m] distancia máxima de lookahead
             N = 40
         )
 
@@ -151,10 +153,10 @@ class ControladorPurePursuit:
             kappa_out = max(kappas)
         elif mode == 2:
             # Modo de curvatura media
-            kappa_out = sum(kappas) /len(kappas)
-        else:
+            kappa_out = sum(kappas) / len(kappas)
+        elif mode == 3:
             # Modo por defecto (seguridad)
-            kappa_out = max(kappas)
+            kappa_out = (max(kappas) + sum(kappas) / len(kappas)) / 2.0
 
         return kappa_out
 
@@ -188,7 +190,7 @@ class ControladorPurePursuit:
         else:
             return max(out, target_val)
     
-    def speed_planning(self, kappa, curr_speed, max_speed=10.0, max_acceleration=3.0, max_deceleration=3.0, max_lat_acc=3.0):
+    def speed_planning(self, kappa, curr_speed, max_speed, min_speed, max_acceleration, max_deceleration, dist_to_end):
         """
         Calcula la velocidad objetivo del vehículo en función de la curvatura del camino.
 
@@ -196,63 +198,58 @@ class ControladorPurePursuit:
             kappa (float): Curvatura del camino.
             curr_speed (float): Velocidad actual del vehículo (m/s).
             max_speed (float): Velocidad máxima permitida (m/s).
+            max_speed (float): Velocidad mínima permitida (m/s).
             max_acceleration (float): Aceleración máxima permitida (m/s²).
             max_deceleration (float): Frenada máxima permitida (m/s²).
-            max_lat_acc (float): Máxima aceleración lateral segura (m/s²).
+            dist_to_end (float): Distancia al destino (m).
 
         Returns:
             smooth_target_speed (float): Velocidad objetivo suavizada del vehículo (m/s).
         """
-        # Calcular el radio del círculo en función de la curvatura
-        if kappa < 1e-6:  
-            # Si la curvatura es muy pequeña, se asume que es un camino recto
+        # Radio a partir del cual se considera una recta
+        R_max = 50 
+        # Calcular el radio de la curva
+        if kappa < 1e-6:
+            R = R_max
+        else:
+            R = 1 / kappa
+        # Calcular variable proporcional a la distancia al destino (de 0 a 1, siendo 1 distancia mayor a 15 m)
+        Kdist = max(min(dist_to_end / 15.0, 1.0), 0.0)
+
+        if R >= R_max:  
+            # Se asume que es un camino recto
             target_speed = max_speed
         else:
-            # Si la curvatura NO es muy pequeña, se calcula la velocidad segura
-            target_speed = math.sqrt((1.0 / kappa) * max_lat_acc)
+            # Se asume que es una curva
+            # Computar la velocidad objetivo en función del radio
+            Kp = (max_speed - min_speed) / R_max
+            target_speed = Kp * R + min_speed
 
         # Limitar la velocidad al valor máximo permitido
-        target_speed = min(target_speed, max_speed)
+        target_speed = Kdist * min(target_speed, max_speed)
 
         # Aplicar suavizado para mejorar la respuesta del vehículo ante cambios bruscos
         smooth_target_speed = self.trapezoidal_smoothing(curr_speed, target_speed, max_acceleration, max_deceleration)
 
         return smooth_target_speed
     
-    def compute_adaptive_lookahead_dist(self, kappa, current_speed, max_speed, min_lookahead_dist, max_lookahead_dist, alpha=0.2, beta=0.25):
+    def compute_adaptive_lookahead_dist(self, current_speed, max_speed, min_lookahead_dist, max_lookahead_dist):
         """
         Calcula la distancia de lookahead adaptativa teniendo en cuenta tanto la
         curvatura de la trayectoria como la velocidad actual del vehículo.
 
         Args:
-            kappa (float): Curvatura del camino.
             current_speed (float): Velocidad actual del vehículo (m/s).
             max_speed (float): Velocidad máxima permitida (m/s).
             min_lookahead_dist (float): Distancia mínima de lookahead (m).
             max_lookahead_dist (float): Distancia máxima de lookahead (m).
-            alpha (float): Factor de decaimiento exponencial para kappa * speed.
-            beta (float): Ponderación de la parte de velocidad. El resto (1-beta) se aplica a la parte de curvatura.
             
         Returns:
             dist (float): Distancia de lookahead computada.
         """
-        # Factor de curvatura
-        # Cuanto mayor sea kappa*speed, más pequeño será curv_factor.
-        # alpha controla la sensibilidad al producto kappa*speed.
-        #   - Si kappa*speed = 0  --> curv_factor = 1
-        #   - Si kappa*speed = 5  --> curv_factor = e^(-alpha*5). 
-        #   Si alpha=0.2, curv_factor ≈ e^(-1.0) = 0.3679
-        K_curv = 10
-        curv_factor = math.exp(-alpha * (kappa * K_curv) * current_speed)
-
-        # Factor de velocidad
-        #    current_speed = 0   --> factor_speed = 0
-        #    current_speed = max --> factor_speed = 1
-        speed_factor = max(0.0, min(current_speed / max_speed, 1.0))
-        
-        # Combinar factores y escalar al rango [min_lookahead_dist, max_lookahead_dist]
-        factor = beta * speed_factor + (1.0 - beta) * curv_factor
-        dist = min_lookahead_dist + factor * (max_lookahead_dist - min_lookahead_dist)
+        # Escalar la distancia proporcionalmente con la velocidad actual
+        kp = (max_lookahead_dist - min_lookahead_dist) / max_speed
+        dist = kp * current_speed + min_lookahead_dist
 
         # Restringir la distancia dentro de los límites
         dist = max(min_lookahead_dist, min(dist, max_lookahead_dist))
@@ -319,8 +316,18 @@ class ControladorPurePursuit:
 
         # 4. Si se recorrió todo el path y no se superó lookahead_dist, devolvemos el último punto para evitar índices fuera de rango.
         return geo.Point(prev_x, prev_y, 0.0)
+    
+    def normalize_angle(self, angle):
+        """ 
+        Normaliza el ángulo al rango [-pi, pi). 
+        """
+        while angle > math.pi:
+            angle -= 2.0 * math.pi
+        while angle <= -math.pi:
+            angle += 2.0 * math.pi
+        return angle
 
-    def compute_steering(self, curr_position, target_position, curr_vehicle_yaw, curr_steering, lookahead_dist):
+    def compute_steering(self, curr_position, target_position, curr_vehicle_yaw, curr_steering, lateral_error, mode):
         """
         Calcula el ángulo de giro del vehículo y suaviza la salida aplicando un suavizado trapezoidal.
 
@@ -329,19 +336,45 @@ class ControladorPurePursuit:
             target_position (geometry_msgs/Point): Posición actual del punto objetivo en el marco del path [m].
             curr_vehicle_yaw (float): Orientación actual del vehículo [rad].
             curr_steering (float): Ángulo de dirección actual del vehículo [rad].
-            lookahead_dist(float): Distancia de lookahead deseada [m].
+            lateral_error (float): Error lateral entre el vehículo y la trayectoria [m]. 
+            mode (int): Modo de funcionamiento del algoritmo (1: curvas, 2: rectas).
 
         Returns:
             smooth_target_steering (float): Ángulo de dirección objetivo suavizado [rad].
-        """                                                                                                         
-        # Calcular el ángulo entre la dirección actual y la dirección hacia el punto
-        alpha = math.atan2(
-            target_position.y - curr_position.y, 
-            target_position.x - curr_position.x
-            ) - curr_vehicle_yaw
+        """                            
+        # Calcular distancias
+        dx = target_position.x - curr_position.x
+        dy = target_position.y - curr_position.y
+        dist = math.sqrt(dx**2 + dy**2)
 
-        # Calcular el ángulo de dirección (steering) mediante la fórmula de Pure Pursuit
-        target_steering = math.atan2(2.0 * self.vehicle_params.wheelbase * math.sin(alpha), lookahead_dist)
+        # Calcular el ángulo entre la dirección actual y la dirección hacia el punto
+        alpha = self.normalize_angle(math.atan2(
+            dy, 
+            dx
+            ) - curr_vehicle_yaw)
+
+        # Calcular el ángulo de dirección (steering)
+        if dist < 1e-6:
+            curvature_pure = 0.0
+        else:
+            curvature_pure = 2.0 * math.sin(alpha) / dist
+        # Modo 1: Curvas (Pure Pursuit clásico)
+        if mode == 1:
+            target_steering = math.atan(curvature_pure * self.vehicle_params.wheelbase)
+            self.integral_error = 0.0 # Resetear el error integral
+
+        # Modo 2: Rectas (Pure Pursuit con término integral)
+        else:
+            # Acumular error integral
+            self.integral_error += lateral_error * self.T
+            # Limitar el error integral
+            max_integral = 0.3
+            self.integral_error = min(max(self.integral_error, -max_integral), max_integral)
+            # Corregir la curvatura calculada 
+            ki = 0.02
+            curvature_corrected = curvature_pure + ki * self.integral_error
+            target_steering = math.atan(curvature_corrected * self.vehicle_params.wheelbase)
+
 
         # Ajustar al rango permitido
         target_steering = min(max(target_steering, -self.vehicle_params.max_steer), self.vehicle_params.max_steer)
@@ -355,6 +388,32 @@ class ControladorPurePursuit:
         )
 
         return smooth_target_steering
+    
+    def lateral_error_segment(self, closest_point, next_point, vehicle_pos):
+        """
+        Devuelve el error lateral con signo usando la orientación del segmento
+        (closest_point -> next_point).
+        """
+        x_c = closest_point.x
+        y_c = closest_point.y
+        x_n = next_point.x
+        y_n = next_point.y
+
+        x_v = vehicle_pos.x
+        y_v = vehicle_pos.y
+
+        # 1) Orientación del segmento
+        theta_segment = math.atan2(y_n - y_c, x_n - x_c)
+
+        # 2) Diferencia entre vehículo y closest_point
+        dx = x_v - x_c
+        dy = y_v - y_c
+
+        # 3) Error lateral con signo
+        #    e_perp = -(dx)*sin(theta_segment) + (dy)*cos(theta_segment)
+        e_perp = - dx * math.sin(theta_segment) + dy * math.cos(theta_segment)
+
+        return e_perp
 
     def run_pure_pursuit(self):
         """
@@ -413,6 +472,15 @@ class ControladorPurePursuit:
             if dist_sq < min_dist_sq:
                 min_dist_sq = dist_sq
                 closest_idx = i
+
+        if closest_idx == len(self.path.poses) - 3:
+            # Se considera que el camino ha terminado
+            cmd = cpr.CmdActuadores()
+            cmd.vel_lineal = 0.0
+            cmd.steering = 0.0
+            self.publish(cmd, None)
+            return
+    
         # Crear un nuevo Path con los puntos recortados
         reduced_path = nav.Path()
         start_idx = max(closest_idx - self.algo_params.N, 0)
@@ -423,6 +491,7 @@ class ControladorPurePursuit:
         # PASO 2: Calcular la curvatura del camino. Para ello se proponen 2 estrategias:
         # - Modo 1: Curvatura máxima de N puntos del camino (más segura)
         # - Modo 2: Curvatura media de N puntos del camino (más eficiente)
+        # - Modo 3: Curvatura media entra modo 1 y modo 2 (más flexible)
         curvature_mode = 1
         kappa = self.compute_curvature(
             reduced_path, 
@@ -432,19 +501,23 @@ class ControladorPurePursuit:
         # Planificar la velocidad para asegurar una conducción segura y eficiente. Para ello se utiliza:
         # - Curvatura del camino (kappa)
         # - Máxima capacidad de frenada del vehículo
+        # - Distancia al punto final
+        p_finalx = self.path.poses[-1].pose.position.x
+        p_finaly = self.path.poses[-1].pose.position.y
+        dist_final = math.sqrt((p_finalx - vehicle_pos.x) ** 2 + (p_finaly - vehicle_pos.y) ** 2)
         self.target_speed = self.speed_planning(
             kappa,
             self.current_speed, 
             self.vehicle_params.max_speed,
+            self.vehicle_params.min_speed,
             self.vehicle_params.max_acc, 
             self.vehicle_params.max_brake,
-            self.vehicle_params.max_lat_acc
+            dist_final
         )
 
         # Aplicar controlador Pure Pursuit adaptativo
         # Distancia de lookahead adaptativa
         lookahead_dist = self.compute_adaptive_lookahead_dist(
-            kappa, 
             self.current_speed,
             self.vehicle_params.max_speed,
             self.algo_params.min_lookahead_dist,
@@ -456,13 +529,27 @@ class ControladorPurePursuit:
             closest_idx,
             lookahead_dist
         )
-        # Cálculo del ángulo de dirección
+        # Cálculo del ángulo de dirección (Modo 1: curvas, Modo 2: rectas)
+        # Decidir modo de cálculo según la curvatura
+        if kappa < 0.02:
+            steering_mode = 2
+        else:
+            steering_mode = 1
+        # Calcular la distancia lateral entre el vehículo y el camino (con signo)
+        if closest_idx + 1 < len(self.path.poses):
+            closest_point = self.path.poses[closest_idx].pose.position
+            next_closest_point = self.path.poses[closest_idx+1].pose.position
+            lateral_error = self.lateral_error_segment(closest_point, next_closest_point, vehicle_pos)
+        else:
+            lateral_error = 0.0
+        # Computar ángulo de dirección [rad]
         self.target_steering = self.compute_steering(
             vehicle_pos, 
             self.lookahead_point, 
             vehicle_yaw, 
             self.current_steering, 
-            lookahead_dist
+            lateral_error,
+            steering_mode
         )
 
         # Construir los comandos para el controlador de bajo nivel

@@ -35,13 +35,12 @@ if [ "$LAUNCH_RVIZ" = "true" ] || [ "$LAUNCH_RVIZ" = "True" ]; then
     roslaunch proyecto_cpr_pkg rviz.launch \
         config:=$RVIZ_CONFIG \
         > /dev/null 2>&1 &
+
+    # Espera unos segundos para que RViz arranque
     sleep 3
 else
     echo "Omitiendo RViz..."
 fi
-
-# Espera unos segundos para que RViz arranque
-sleep 3
 
 # ----------------------- Proyecto -----------------------
 

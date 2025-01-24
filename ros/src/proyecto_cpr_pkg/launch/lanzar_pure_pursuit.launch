@@ -7,5 +7,17 @@
 
     <!-- Iniciar Control de Actuadores -->
     <node pkg="proyecto_cpr_pkg" type="controlador_actuadores.py" name="controlador_actuadores" />
+
+    <!-- Iniciar grabación de rosbags -->
+    <node pkg="rosbag" type="record" name="rosbag_recorder"
+          args="-O $(find proyecto_cpr_pkg)/../../rosbags/pure_pursuit.bag 
+                /airsim_node/car_1/car_state
+                /airsim_node/car_1/car_cmd 
+                /cmd_actuadores
+                /pure_pursuit_vis
+                /trayectoria_local" 
+          output="screen"
+    />
+
 </launch>
 
