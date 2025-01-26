@@ -1,12 +1,9 @@
 <launch>
-    <!-- Iniciar SLAM -->
-    <node pkg="proyecto_cpr_pkg" type="slam_visual.py" name="slam_visual" output="screen" />
-
     <!-- Iniciar Planificador Global -->
     <node pkg="proyecto_cpr_pkg" type="planificador_global.py" name="planificador_global" output="screen" />
 
     <!-- Iniciar Planificador Local -->
-    <node pkg="proyecto_cpr_pkg" type="planificador_local.py" name="planificador_local" output="screen" />
+    <!-- <node pkg="proyecto_cpr_pkg" type="planificador_local.py" name="planificador_local" output="screen" /> -->
 
     <!-- Iniciar Control de Movimiento -->
     <node pkg="proyecto_cpr_pkg" type="controlador_pure_pursuit.py" name="controlador_pure_pursuit" output="screen" />

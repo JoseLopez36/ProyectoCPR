@@ -221,7 +221,7 @@ class PlanificadorGlobal:
 
         # Publicadores
         self.pub_trayectoria_global = rospy.Publisher(
-            '/trayectoria_global', 
+            '/trayectoria_local', 
             nav.Path,
             queue_size=1,
             latch=True
