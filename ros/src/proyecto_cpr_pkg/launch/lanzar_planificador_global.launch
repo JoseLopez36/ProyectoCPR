@@ -5,5 +5,7 @@
     <!-- Iniciar Planificador Local -->
     <node pkg="proyecto_cpr_pkg" type="planificador_local.py" name="planificador_local" output="screen" />
 
+
+
 </launch>
 

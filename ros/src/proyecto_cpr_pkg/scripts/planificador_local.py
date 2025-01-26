@@ -41,7 +41,10 @@ class PlanificadorLocal:
 
     def state_callback(self, msg):
         # Extraer la información del estado del coche
-        self.pose_actual = msg.pose             # Pose actual del coche
+        self.current_pose = geo.PoseStamped()
+        self.current_pose.header = msg.header
+        self.current_pose.pose = msg.pose.pose  # Pose actual del coche
+        self.current_speed = msg.speed          # Velocidad actual del coche
 
     def global_path_callback(self, msg):
         # Extraer la información de la trayectoria global
@@ -53,7 +56,6 @@ class PlanificadorLocal:
         # Convertir el mensaje PointCloud2 a una lista de puntos (x, y) ignorando z
         aux = pc2.read_points(self.datos_lidar, field_names=("x", "y"), skip_nans=True)
         self.lidar_points = [(point[0], point[1]) for point in aux]  # Obtener solo x e y
-        rospy.logwarn("Lidar callbak")
 
     def obstaculo_detectado(self, waypoint):
         wx = waypoint.pose.position.x
