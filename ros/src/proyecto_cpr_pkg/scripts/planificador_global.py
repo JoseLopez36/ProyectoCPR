@@ -6,10 +6,12 @@ import std_msgs.msg as std
 import nav_msgs.msg as nav
 import airsim_ros_pkgs.msg as air
 import proyecto_cpr_pkg.msg as cpr
+from scipy.interpolate import interp1d
+import numpy as np
 import cv2
 
 # Variables globales
-win=(20,98) # 140 190
+win=(10,190) # 140 190 #20 98
 
 image=r"/home/testuser/ProyectoCPR/ros/src/proyecto_cpr_pkg/config/mapa_bin.png"
 imagen = cv2.imread(image)
@@ -32,6 +34,19 @@ rojo= (255,0,0)
 verde_cesped = (34, 139, 34)
 gris_carretera = (50, 50, 50)
 amarillo=(255, 255, 0)
+
+def expand_path(x_coords, y_coords, num_points=1000):
+    # Crear un rango de índices para los puntos originales
+    original_indices = np.linspace(0, 1, len(x_coords))
+    
+    # Crear un rango de índices para los puntos interpolados
+    new_indices = np.linspace(0, 1, num_points)
+    
+    # Interpolar los valores de x y y
+    x_interpolated = interp1d(original_indices, x_coords, kind='linear')(new_indices)
+    y_interpolated = interp1d(original_indices, y_coords, kind='linear')(new_indices)
+    
+    return x_interpolated, y_interpolated
 
 def distancia_manhattan(pos_init,pos_final):
     px1,py1=pos_init
@@ -135,7 +150,7 @@ class PlanificadorGlobal:
         self.fronteras=cola_A_star()
         self.nodos=dibuja_grid(ANCHO_VENTANA,ALTO_VENTANA,tam)
         self.nodos[win[0]][win[1]].costo=0
-        self.inicio=self.nodos[80][75] #1,1
+        self.inicio=self.nodos[136][98] #1,1 #80 75
         self.inicio.coste_andar=0
         self.fronteras.añadir(self.inicio)
         self.visitados = set()
@@ -197,10 +212,13 @@ class PlanificadorGlobal:
             now = rospy.Time.now()
             trayectoria.header.stamp = now
 
+            # Expandir el path
+            x_expanded, y_expanded = expand_path(self.x_cord, self.y_cord, num_points=1000)
+
             # Crear los puntos del camino a partir de los vectores
-            for x, y in zip(self.x_cord, self.y_cord):
-                y=136-y
-                x=x-98
+            for x, y in zip(x_expanded, y_expanded):
+                y=97-y
+                x=x-136
 
                 pose = geo.PoseStamped()
                 pose.header.frame_id = "world_enu"
