@@ -98,8 +98,8 @@ Ejecuta los siguientes scripts:
 
 ```bash
 ~/ProyectoCPR/build_all.sh
-~/ProyectoCPR/run_all.sh proyecto_cpr.launch false
+~/ProyectoCPR/run_all.sh lanzar_pure_pursuit.launch true
 ```
-Puedes cambiar `false` por `true` para lanzar RViz.
+Puedes cambiar `true` por `false` para no lanzar RViz.
 
 
