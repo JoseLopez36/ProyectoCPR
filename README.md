@@ -32,21 +32,7 @@ docker build -t airsim-ros -f Dockerfile .
 ```
 Nota: Este paso puede tomar unos minutos.
 
-### Paso 3. Configurar la variable de entorno
-
-En Windows, crea la variable de entorno `CPR_PATH` con la ruta donde se haya clonado este repositorio.
-
-Por ejemplo:
-
-- Si clonaste el repositorio en `C:\Users\<tu-usuario>\Documents\ProyectoCPR`, entonces tu CPR_PATH deberá ser `C:\Users\<tu-usuario>\Documents\ProyectoCPR`.
-
-Para crear la variable de entorno en Windows:
-
-1. Presiona `Windows + R` y escribe `Sysdm.cpl`.
-2. Ve a `Avanzado > Variables de entorno`
-3. En Variables de sistema, crea una nueva variable con el nombre CPR_PATH y el valor con la ruta del repositorio.
-
-### Paso 4. Iniciar el contenedor
+### Paso 3. Iniciar el contenedor
 
 Para iniciar el contenedor, arrancar Docker Desktop y desde el directorio raíz del proyecto:
 1. Ve a la carpeta `tools`.
@@ -54,7 +40,7 @@ Para iniciar el contenedor, arrancar Docker Desktop y desde el directorio raíz 
 
 Esto correrá el contenedor con la imagen construida anteriormente y montará el volumen correspondiente. Una vez esté corriendo, tendrás acceso a un shell dentro del contenedor. Este paso debe repetirse cada vez que se quiera iniciar el contenedor.
 
-### Paso 5. Construir y configurar AirSim
+### Paso 4. Construir y configurar AirSim
 
 Una vez dentro del contenedor, construye AirSim:
 ```bash
@@ -68,7 +54,7 @@ Para configurar AirSim es necesario realizar los siguientes pasos:
 2. Pegar en esa carpeta el archivo `settings.json` presente en la raíz de este repositorio.
 3. (opcional) Modificar archivo `settings.json` si se desea para cambiar sensores, vehículos...
 
-### Paso 6. Construir el workspace de ROS
+### Paso 5. Construir el workspace de ROS
 
 A continuación, procede a construir el workspace de ROS:
 ```bash
@@ -78,23 +64,12 @@ source devel/setup.bash
 ```
 Nota: Asegúrate de ejecutar source devel/setup.bash cada vez que abras un nuevo terminal dentro del contenedor para que las configuraciones de tu workspace estén disponibles.
 
-### Paso 7. Configuración para usar RViz
+### Paso 6. Configuración para usar RViz
 
 Para usar RViz en Windows, necesitas un servidor X. Se recomienda Xming:
 1. Descargar Xming y Xming-fonts de Public Domain Releases
 2. Instalar ambos paquetes.
 3. Ejecutar Xming antes de abrir RViz en el contenedor.
-
----
-
-## Configuración de AirSim
-
-Para configurar AirSim es necesario disponer del archivo `settings.json`. A continuación se describe como configurarlo correctamente:
-1. Crea una carpeta llamada AirSim en C:\Users\{tu-usuario}\Documents.
-2. Copia el archivo settings.json del repositorio en esa carpeta.
-3. Modifica settings.json si es necesario. Aquí puedes ajustar sensores y otras configuraciones del vehículo (más información en https://microsoft.github.io/AirSim/settings/).
-
----
 
 ## Uso
 
@@ -108,36 +83,14 @@ Ejecuta el .exe correspondiente del proyecto. Los distintos ejecutables se encue
 
 Abre el contenedor haciendo doble-click en `tools/start_container.bat`. Si deseas abrir otro terminal para el mismo contenedor, ejecuta `tools/open_container_terminal.bat`. Si deseas cerrar el contenedor, ejecuta `tools/docker_kill.bat`.
 
-### Paso 3. Configurar IP del Host:
+### Paso 3. Ejecutar el programa desde el contenedor Docker:
 
-Edita el archivo `lanzar_airsim.sh` y sustituye {tu-ip} por la IPv4 del host (ver Nota).
+Ejecuta los siguientes scripts:
 
-Líneas afectadas:
 ```bash
-# Asignar manualmente la IP
-wsl_host_ip="{tu-ip}"
+~/ProyectoCPR/build_all.sh
+~/ProyectoCPR/run_all.sh proyecto_cpr.launch false
 ```
-
-Nota: Esta IP se puede obtener ejecutando ipconfig en la máquina host y copiando la IPv4 bajo el nombre `Ethernet adapter vEthernet (WSL (Hyper-V firewall))`.
-
-### Paso 4. Ejecutar el programa desde el contenedor Docker:
-
-Ejecuta los siguientes scripts en orden y cada uno en distintos terminales (para abrir un nuevo terminal ejecuta `tools/open_container_terminal.bat`):
-
-En el primer terminal:
-```bash
-~/ProyectoCPR/lanzar_airsim.sh
-```
-
-En el segundo terminal:
-```bash
-~/ProyectoCPR/lanzar_proyecto_cpr.sh
-```
-
-(Opcional) En el tercer terminal:
-```bash
-~/ProyectoCPR/lanzar_rviz.sh default 
-```
-Puedes cambiar la configuración `default` por cualquier otra disponible para RViz.
+Puedes cambiar `false` por `true` para lanzar RViz.
 
 
