@@ -32,15 +32,24 @@ docker build -t airsim-ros -f Dockerfile .
 ```
 Nota: Este paso puede tomar unos minutos.
 
-### Paso 3. Iniciar el contenedor
+### Paso 3. Configurar la variable de entorno
+En Windows, crea la variable de entorno `CPR_PATH` con la ruta donde se haya clonado este repositorio.
+Por ejemplo:
+- Si clonaste el repositorio en `C:\Users\<tu-usuario>\Documents\ProyectoCPR`, entonces tu CPR_PATH deberá ser `C:\Users\<tu-usuario>\Documents\ProyectoCPR`.
+Para crear la variable de entorno en Windows:
+1. Presiona `Windows + R` y escribe `Sysdm.cpl`.
+2. Ve a `Avanzado > Variables de entorno`
+3. En Variables de sistema, crea una nueva variable con el nombre CPR_PATH y el valor con la ruta del repositorio.
+
+### Paso 4. Iniciar el contenedor
 
 Para iniciar el contenedor, arrancar Docker Desktop y desde el directorio raíz del proyecto:
 1. Ve a la carpeta `tools`.
-1. Haz doble click en el archivo `start_container.bat`.
+2. Haz doble click en el archivo `start_container.bat`.
 
 Esto correrá el contenedor con la imagen construida anteriormente y montará el volumen correspondiente. Una vez esté corriendo, tendrás acceso a un shell dentro del contenedor. Este paso debe repetirse cada vez que se quiera iniciar el contenedor.
 
-### Paso 4. Construir y configurar AirSim
+### Paso 5. Construir y configurar AirSim
 
 Una vez dentro del contenedor, construye AirSim:
 ```bash
@@ -54,7 +63,7 @@ Para configurar AirSim es necesario realizar los siguientes pasos:
 2. Pegar en esa carpeta el archivo `settings.json` presente en la raíz de este repositorio.
 3. (opcional) Modificar archivo `settings.json` si se desea para cambiar sensores, vehículos...
 
-### Paso 5. Construir el workspace de ROS
+### Paso 6. Construir el workspace de ROS
 
 A continuación, procede a construir el workspace de ROS:
 ```bash
@@ -64,7 +73,7 @@ source devel/setup.bash
 ```
 Nota: Asegúrate de ejecutar source devel/setup.bash cada vez que abras un nuevo terminal dentro del contenedor para que las configuraciones de tu workspace estén disponibles.
 
-### Paso 6. Configuración para usar RViz
+### Paso 7. Configuración para usar RViz
 
 Para usar RViz en Windows, necesitas un servidor X. Se recomienda Xming:
 1. Descargar Xming y Xming-fonts de Public Domain Releases
