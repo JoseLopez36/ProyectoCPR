@@ -12,7 +12,7 @@ import numpy as np
 import cv2
 
 # Variables globales
-win=(10,190) # 140 190 #20 98
+win=(30,160) # 140 190 #20 98
 
 image=r"/home/testuser/ProyectoCPR/ros/src/proyecto_cpr_pkg/config/mapa_bin.png"
 imagen = cv2.imread(image)
@@ -221,7 +221,7 @@ class PlanificadorGlobal:
 
         # Publicadores
         self.pub_trayectoria_global = rospy.Publisher(
-            '/trayectoria_local', 
+            '/trayectoria_global', 
             nav.Path,
             queue_size=1,
             latch=True
