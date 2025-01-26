@@ -27,8 +27,7 @@ class PlanificadorLocal:
         self.pub_trayectoria_local = rospy.Publisher(
             '/trayectoria_local', 
             nav.Path,
-            queue_size=1,
-            latch=True
+            queue_size=5
         )
 
         rospy.loginfo("Nodo de Planificador Local inicializado.")

@@ -54,7 +54,7 @@ class ControladorPurePursuit:
         self.algo_params = AlgorithmParams(
             min_lookahead_dist = 1.5,  # [m] distancia mínima de lookahead
             max_lookahead_dist = 10.0, # [m] distancia máxima de lookahead
-            N = 300
+            N = 200
         )
 
         # Transform Listener

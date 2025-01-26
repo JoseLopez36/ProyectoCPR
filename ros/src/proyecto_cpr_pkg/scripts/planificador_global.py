@@ -7,6 +7,7 @@ import nav_msgs.msg as nav
 import airsim_ros_pkgs.msg as air
 import proyecto_cpr_pkg.msg as cpr
 from scipy.interpolate import interp1d
+from scipy.interpolate import UnivariateSpline
 import numpy as np
 import cv2
 
@@ -34,6 +35,63 @@ rojo= (255,0,0)
 verde_cesped = (34, 139, 34)
 gris_carretera = (50, 50, 50)
 amarillo=(255, 255, 0)
+
+def smooth_traj(trayectoria, factor_suavizado=2.0, densidad_puntos=10):
+    # Extraer solo coordenadas x e y (z es fijo según tu implementación original)
+    x = []
+    y = []
+    for pose in trayectoria.poses:
+        x.append(pose.pose.position.x)
+        y.append(pose.pose.position.y)
+    
+    x = np.array(x)
+    y = np.array(y)
+    
+    # Calcular distancia acumulada como parámetro
+    dx = np.diff(x)
+    dy = np.diff(y)
+    distancias = np.sqrt(dx**2 + dy**2)
+    distancias_acumuladas = np.cumsum(distancias)
+    distancias_acumuladas = np.insert(distancias_acumuladas, 0, 0)
+    
+    # Splines de suavizado
+    spline_x = UnivariateSpline(
+        distancias_acumuladas, 
+        x, 
+        s=factor_suavizado * len(x)
+    )
+    
+    spline_y = UnivariateSpline(
+        distancias_acumuladas,
+        y,
+        s=factor_suavizado * len(y)
+    )
+    
+    # Generar nueva distribución de puntos
+    nuevos_puntos = np.linspace(
+        0, 
+        distancias_acumuladas[-1], 
+        num=densidad_puntos * len(distancias_acumuladas)
+    )
+    
+    nuevos_x = spline_x(nuevos_puntos)
+    nuevos_y = spline_y(nuevos_puntos)
+    
+    # Construir trayectoria suavizada (versión corregida)
+    trayectoria_suavizada = nav.Path()
+    trayectoria_suavizada.header = trayectoria.header
+    trayectoria_suavizada.poses = []
+    
+    for xi, yi in zip(nuevos_x, nuevos_y):
+        pose = geo.PoseStamped()
+        pose.header.frame_id = trayectoria.header.frame_id
+        pose.pose.position.x = xi
+        pose.pose.position.y = yi
+        pose.pose.position.z = 0.0  # Z fijo como en tu código original
+        pose.pose.orientation.w = 1.0  # Orientación neutra
+        trayectoria_suavizada.poses.append(pose)
+    
+    return trayectoria_suavizada
 
 def expand_path(x_coords, y_coords, num_points=1000):
     # Crear un rango de índices para los puntos originales
@@ -163,7 +221,7 @@ class PlanificadorGlobal:
 
         # Publicadores
         self.pub_trayectoria_global = rospy.Publisher(
-            '/trayectoria_local', 
+            '/trayectoria_global', 
             nav.Path,
             queue_size=1,
             latch=True
@@ -217,10 +275,10 @@ class PlanificadorGlobal:
             trayectoria.header.stamp = now
 
             # Expandir el path
-            x_expanded, y_expanded = expand_path(self.x_cord, self.y_cord, num_points=1000)
+            #x_expanded, y_expanded = expand_path(self.x_cord, self.y_cord, num_points=1000)
 
             # Crear los puntos del camino a partir de los vectores
-            for x, y in zip(x_expanded, y_expanded):
+            for x, y in zip(self.x_cord, self.y_cord):
                 y=97-y
                 x=x-136
 
@@ -232,8 +290,15 @@ class PlanificadorGlobal:
                 pose.pose.orientation.w = 1.0  # Sin rotación
                 trayectoria.poses.append(pose)
 
+            # Suavizar esquinas
+            trayectoria_suavizada = smooth_traj(
+                trayectoria,
+                factor_suavizado=0.1,  # Más suave
+                densidad_puntos=10     # Más puntos para curvas detalladas
+            )
+
             # Publicar la trayectoria
-            self.publish(trayectoria)
+            self.publish(trayectoria_suavizada)
 
             # Parar nodo
             self.simulando=False
