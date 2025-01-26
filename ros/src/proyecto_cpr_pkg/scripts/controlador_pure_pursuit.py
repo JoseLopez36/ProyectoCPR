@@ -24,7 +24,7 @@ class VehicleParams(NamedTuple):
 class AlgorithmParams(NamedTuple):
     min_lookahead_dist      : float     # Distancia de lookahead mínima [m]
     max_lookahead_dist      : float     # Distancia de lookahead máxima [m]
-    N                       : int       # Número de puntos tomados del camino hacia delante y detrás del punto más cercano al vehículo
+    N                       : int       # Número de puntos tomados del camino hacia delante del punto más cercano al vehículo
 
 class ControladorPurePursuit:
     def __init__(self):
@@ -47,14 +47,14 @@ class ControladorPurePursuit:
             max_speed = 20.0,       # 54 km/h, velocidad máxima aproximada en ciudad
             min_speed = 3.0,        
             max_acc = 2.5,          # Aceleración máxima [m/s^2] (moderada para ciudad)
-            max_brake = 1.5,        # Frenada máxima [m/s^2]
+            max_brake = 1.0,        # Frenada máxima [m/s^2]
             max_steer = math.pi/4,  # ~35° en ra d (recomendado: 30° a 40°)
             max_steer_change = 0.5  # (recomendado: 20°/s a 120°/s)
         )
         self.algo_params = AlgorithmParams(
             min_lookahead_dist = 1.5,  # [m] distancia mínima de lookahead
             max_lookahead_dist = 10.0, # [m] distancia máxima de lookahead
-            N = 40
+            N = 50
         )
 
         # Transform Listener
@@ -92,7 +92,17 @@ class ControladorPurePursuit:
 
     def path_callback(self, msg):
         # Extraer la información de la trayectoria recibida
-        self.path = msg                         # Trayectoria local a seguir
+        if len(msg.poses) < 3:
+            rospy.logwarn("ControladorPurePursuit: Camino recibido es demasiado corto")
+            self.path = None
+        else:
+            self.path = msg
+            # Precalcular distancias acumuladas
+            self.cumulative_distances = [0.0]
+            for i in range(1, len(self.path.poses)):
+                dx = self.path.poses[i].pose.position.x - self.path.poses[i-1].pose.position.x
+                dy = self.path.poses[i].pose.position.y - self.path.poses[i-1].pose.position.y
+                self.cumulative_distances.append(self.cumulative_distances[-1] + math.hypot(dx, dy))
 
     def compute_curvature(self, path, mode=1):
         """
@@ -190,7 +200,7 @@ class ControladorPurePursuit:
         else:
             return max(out, target_val)
     
-    def speed_planning(self, kappa, curr_speed, max_speed, min_speed, max_acceleration, max_deceleration, dist_to_end):
+    def speed_planning(self, kappa, curr_speed, max_speed, min_speed, max_acceleration, max_deceleration, remaining_distance):
         """
         Calcula la velocidad objetivo del vehículo en función de la curvatura del camino.
 
@@ -201,39 +211,43 @@ class ControladorPurePursuit:
             max_speed (float): Velocidad mínima permitida (m/s).
             max_acceleration (float): Aceleración máxima permitida (m/s²).
             max_deceleration (float): Frenada máxima permitida (m/s²).
-            dist_to_end (float): Distancia al destino (m).
+            remaining_distance (float): Distancia restante hasta el final del camino (m).
 
         Returns:
             smooth_target_speed (float): Velocidad objetivo suavizada del vehículo (m/s).
         """
-        # Radio a partir del cual se considera una recta
-        R_max = 50 
-        # Calcular el radio de la curva
-        if kappa < 1e-6:
-            R = R_max
-        else:
-            R = 1 / kappa
-        # Calcular variable proporcional a la distancia al destino (de 0 a 1, siendo 1 distancia mayor a 15 m)
-        Kdist = max(min(dist_to_end / 15.0, 1.0), 0.0)
+        R_max = 50  # Radio para considerar como recta
+        R = 1 / kappa if kappa >= 1e-6 else R_max
 
-        if R >= R_max:  
-            # Se asume que es un camino recto
+        if R >= R_max:
             target_speed = max_speed
         else:
-            # Se asume que es una curva
-            # Computar la velocidad objetivo en función del radio
             Kp = (max_speed - min_speed) / R_max
             target_speed = Kp * R + min_speed
 
+
         # Limitar la velocidad al valor máximo permitido
-        target_speed = Kdist * min(target_speed, max_speed)
+        target_speed = min(target_speed, max_speed)
+
+        # Calcular velocidad máxima permitida por distancia restante
+        if remaining_distance > 0.0:
+            max_allowed_speed = math.sqrt(2.0 * max_deceleration * remaining_distance)
+            # Si la distancia es menor que la necesaria para frenar, reducir a 0
+            if remaining_distance < (curr_speed ** 2.0) / (2.0 * max_deceleration):
+                max_allowed_speed = 0.0
+            else:
+                max_allowed_speed = max(max_allowed_speed, min_speed)
+        else:
+            max_allowed_speed = 0.0
+
+        target_speed = min(target_speed, max_allowed_speed)
 
         # Aplicar suavizado para mejorar la respuesta del vehículo ante cambios bruscos
         smooth_target_speed = self.trapezoidal_smoothing(curr_speed, target_speed, max_acceleration, max_deceleration)
 
         return smooth_target_speed
     
-    def compute_adaptive_lookahead_dist(self, current_speed, max_speed, min_lookahead_dist, max_lookahead_dist):
+    def compute_adaptive_lookahead_dist(self, current_speed, max_speed, min_lookahead_dist, max_lookahead_dist, remaining_distance):
         """
         Calcula la distancia de lookahead adaptativa teniendo en cuenta tanto la
         curvatura de la trayectoria como la velocidad actual del vehículo.
@@ -243,6 +257,7 @@ class ControladorPurePursuit:
             max_speed (float): Velocidad máxima permitida (m/s).
             min_lookahead_dist (float): Distancia mínima de lookahead (m).
             max_lookahead_dist (float): Distancia máxima de lookahead (m).
+            remaining_distance (float): Distancia restante hasta el final del camino (m).
             
         Returns:
             dist (float): Distancia de lookahead computada.
@@ -253,6 +268,9 @@ class ControladorPurePursuit:
 
         # Restringir la distancia dentro de los límites
         dist = max(min_lookahead_dist, min(dist, max_lookahead_dist))
+
+        # Limitar la distancia según se vaya acercando al final
+        dist = min(dist, remaining_distance / 2.0)
 
         return dist
     
@@ -456,12 +474,12 @@ class ControladorPurePursuit:
         # Si ha habido algún error, frenar inmediatamente
         if error:
             cmd = cpr.CmdActuadores()
-            cmd.vel_lineal = 0.0
-            cmd.steering = 0.0
+            cmd.vel_lineal = self.current_speed
+            cmd.steering = self.current_steering
             self.publish(cmd, None)
             return
         
-        # PASO 1: Reducir la trayectoria a N puntos hacia delante y hacia atrás del punto más cercano al vehículo
+        # PASO 1: Reducir la trayectoria a N puntos hacia delante del punto más cercano al vehículo
         # Hallar el índice del punto más cercano en la trayectoria
         min_dist_sq = float('inf')
         closest_idx = 0
@@ -473,17 +491,13 @@ class ControladorPurePursuit:
                 min_dist_sq = dist_sq
                 closest_idx = i
 
-        if closest_idx == len(self.path.poses) - 3:
-            # Se considera que el camino ha terminado
-            cmd = cpr.CmdActuadores()
-            cmd.vel_lineal = 0.0
-            cmd.steering = 0.0
-            self.publish(cmd, None)
-            return
+        # Obtener distancia restante desde closest_idx hasta el final
+        if self.cumulative_distances:
+            remaining_distance = self.cumulative_distances[-1] - self.cumulative_distances[closest_idx]
     
         # Crear un nuevo Path con los puntos recortados
         reduced_path = nav.Path()
-        start_idx = max(closest_idx - self.algo_params.N, 0)
+        start_idx = max(closest_idx, 0)
         end_idx   = min(closest_idx + self.algo_params.N, len(self.path.poses))
         reduced_path.header = self.path.header
         reduced_path.poses  = self.path.poses[start_idx:end_idx]
@@ -502,9 +516,6 @@ class ControladorPurePursuit:
         # - Curvatura del camino (kappa)
         # - Máxima capacidad de frenada del vehículo
         # - Distancia al punto final
-        p_finalx = self.path.poses[-1].pose.position.x
-        p_finaly = self.path.poses[-1].pose.position.y
-        dist_final = math.sqrt((p_finalx - vehicle_pos.x) ** 2 + (p_finaly - vehicle_pos.y) ** 2)
         self.target_speed = self.speed_planning(
             kappa,
             self.current_speed, 
@@ -512,7 +523,7 @@ class ControladorPurePursuit:
             self.vehicle_params.min_speed,
             self.vehicle_params.max_acc, 
             self.vehicle_params.max_brake,
-            dist_final
+            remaining_distance
         )
 
         # Aplicar controlador Pure Pursuit adaptativo
@@ -521,7 +532,8 @@ class ControladorPurePursuit:
             self.current_speed,
             self.vehicle_params.max_speed,
             self.algo_params.min_lookahead_dist,
-            self.algo_params.max_lookahead_dist
+            self.algo_params.max_lookahead_dist,
+            remaining_distance
         )
         # Pure Pursuit
         self.lookahead_point = self.find_lookahead_point(
