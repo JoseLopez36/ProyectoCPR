@@ -1,0 +1,26 @@
+<launch>
+    <!-- Iniciar Planificador Global -->
+    <node pkg="proyecto_cpr_pkg" type="planificador_global.py" name="planificador_global" output="screen" />
+
+    <!-- Iniciar Planificador Local -->
+    <node pkg="proyecto_cpr_pkg" type="planificador_local.py" name="planificador_local" />
+
+    <!-- Iniciar Control de Movimiento -->
+    <node pkg="proyecto_cpr_pkg" type="controlador_pure_pursuit.py" name="controlador_pure_pursuit" />
+
+    <!-- Iniciar Control de Actuadores -->
+    <node pkg="proyecto_cpr_pkg" type="controlador_actuadores.py" name="controlador_actuadores" />
+
+    <!-- Iniciar grabación de rosbags -->
+    <node pkg="rosbag" type="record" name="rosbag_recorder"
+          args="-O $(find proyecto_cpr_pkg)/../../rosbags/pure_pursuit.bag 
+                /airsim_node/car_1/car_state
+                /airsim_node/car_1/car_cmd 
+                /cmd_actuadores
+                /pure_pursuit_vis
+                /trayectoria_local" 
+          output="screen"
+    />
+
+</launch>
+

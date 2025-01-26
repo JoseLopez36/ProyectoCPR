@@ -6,50 +6,215 @@ import std_msgs.msg as std
 import nav_msgs.msg as nav
 import airsim_ros_pkgs.msg as air
 import proyecto_cpr_pkg.msg as cpr
+import cv2
+
+# Variables globales
+win=(20,98) # 140 190
+
+image=r"/home/testuser/ProyectoCPR/ros/src/proyecto_cpr_pkg/config/mapa_bin.png"
+imagen = cv2.imread(image)
+
+gray = cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY)
+
+_,ibin= cv2.threshold(gray, 70, 1, cv2.THRESH_BINARY)
+
+laberinto2=1-ibin
+
+ANCHO_VENTANA=985
+ALTO_VENTANA=745
+
+tam=5
+
+negro=(0,0,0)
+blanco = (255, 255, 255)
+azul = (0, 0, 255)
+rojo= (255,0,0)
+verde_cesped = (34, 139, 34)
+gris_carretera = (50, 50, 50)
+amarillo=(255, 255, 0)
+
+def distancia_manhattan(pos_init,pos_final):
+    px1,py1=pos_init
+    px2,py2=pos_final
+    d=abs((px2-px1))+abs((py2-py1))
+
+    return d
+
+def dibuja_grid(Ancho, Alto, tam):
+    nodos = []
+    for i in range(Alto//tam):
+        fila = []
+        for j in range(Ancho//tam):
+            nodo = Nodo(i, j,laberinto2[i][j],None,0,0)
+            fila.append(nodo)
+
+        nodos.append(fila)
+    return nodos
+
+class Nodo():
+    def __init__(self,posx,posy,costo,parent,star,andar):
+        self.posx=posx
+        self.posy=posy
+        self.costo=costo
+        self.parent=parent
+        self.coste_a_star=star
+        self.coste_andar=andar
+
+    def action(self,accion):
+        i=self.posx
+        j=self.posy
+        if accion == "arriba":
+            i+=1
+        elif accion == "abajo":
+            i-=1
+        elif accion == "derecha":
+            j+=1
+        elif accion == "izquierda":
+            j-=1
+
+        elif accion == "d1":
+            j+=1
+            i+=1
+        elif accion == "d2":
+            j-=1
+            i+=1
+        elif accion == "d3":
+            j-=1
+            i-=1
+        elif accion == "d4":
+            j+=1
+            i-=1
+
+        if i < 0 or j < 0 or i >= ALTO_VENTANA // tam or j >= ANCHO_VENTANA // tam:
+            return None  # Si alguna coordenada es negativa, retorna None
+        return i, j
+    def __repr__(self):
+        return f"({self.posx}, {self.posy}, {self.coste_a_star})"
+    
+class Fronter():
+    def __init__(self):
+        self.frontera=[]
+
+    def añadir(self,Nodo):
+        self.frontera.append(Nodo)
+
+
+    def vacia(self):
+        if len(self.frontera)==0:
+            return True
+        return False
+    
+    def quitar(self,goal):
+        if self.vacia():
+            raise Exception("Frontera vacia")
+        else:
+            nodo=self.frontera[-1]
+            self.frontera=self.frontera[:-1]
+            return nodo
+
+class cola_A_star(Fronter):
+    def quitar(self,goal):
+        if self.vacia():
+            raise Exception("Frontera vacia")
+        else:
+            for nodos in self.frontera:
+                nodos.coste_a_star=nodos.coste_andar+distancia_manhattan((nodos.posx,nodos.posy),goal)
+            nodos_ordenados = sorted(self.frontera, key=lambda nodo: nodo.coste_a_star)
+            self.frontera =nodos_ordenados
+            nodo=self.frontera[0]
+            self.frontera=self.frontera[1:]
+            return nodo
+
+actions=["d1","d2","d3","d4","arriba","abajo","izquierda","derecha"]
 
 class PlanificadorGlobal:
     def __init__(self):
-        # Variables miembro
-        self.destino = None         # (geometry_msgs/PoseStamped)
-        self.mapa_global = None     # (nav_msgs/OccupancyGrid)
-
-        # Parámetros
-        
-
-        # Suscriptores
-        rospy.Subscriber('/destino', geo.PoseStamped, self.target_callback)
-        rospy.Subscriber('/mapa_global', nav.OccupancyGrid, self.global_map_callback)
+        # Variables internas
+        self.simulando=True
+        self.Win=False
+        self.fronteras=cola_A_star()
+        self.nodos=dibuja_grid(ANCHO_VENTANA,ALTO_VENTANA,tam)
+        self.nodos[win[0]][win[1]].costo=0
+        self.inicio=self.nodos[80][75] #1,1
+        self.inicio.coste_andar=0
+        self.fronteras.añadir(self.inicio)
+        self.visitados = set()
+        self.visitados.add((self.inicio.posx,self.inicio.posy))
+        self.x_cord=[]
+        self.y_cord=[]
 
         # Publicadores
         self.pub_trayectoria_global = rospy.Publisher(
             '/trayectoria_global', 
             nav.Path,
-            queue_size=10
+            queue_size=1,
+            latch=True
         )
 
         rospy.loginfo("Nodo de Planificador Global inicializado.")
 
-    def target_callback(self, msg):
-        # Extraer la información del destino
-        self.destino = msg                      # Destino del vehículo
-
-    def global_map_callback(self, msg):
-        # Extraer la información del mapa global
-        self.mapa_global = msg                  # Mapa global recibido
-
     def ejecutar_planificador_global(self):
-        # TODO: Implementación del planificador global
-
-
-        # Construir la trayectoria global
-        trayectoria = nav.Path()
-        trayectoria.header.frame_id = "map"
+        if not self.simulando:
+            return
         
-        now = rospy.Time.now()
-        trayectoria.header.stamp = now
+        # Implementación del planificador global
+        while not self.fronteras.vacia() and not self.Win:
+            nodo=self.fronteras.quitar(win) 
+            if (nodo.posx,nodo.posy)==win:
+                self.Win=True
+                solucion_nodo = nodo
+            for a in actions:
+                result=nodo.action(a)
+                if result is not None:
+                    i,j=result
+                    vecino=self.nodos[i][j]
+                    
+                    if (i,j) not in self.visitados and vecino.costo==0:
+                        self.visitados.add((i,j))
+                        self.fronteras.añadir(vecino)
+                        vecino.parent=nodo
+                        vecino.coste_andar=nodo.coste_andar+1
+        
+        if self.Win:
+            cont=0
+            while (solucion_nodo.parent is not None):
+                self.x_cord.append(solucion_nodo.posx)
+                self.y_cord.append(solucion_nodo.posy)
+                self.x_cord=self.x_cord[::-1]
+                self.y_cord=self.y_cord[::-1]
+                solucion_nodo=solucion_nodo.parent                
+                
+                cont+=1
+            
+            # Notificar
+            rospy.loginfo(
+                f"La solucion son {cont} pasos"
+            )
 
-        # Publicar la trayectoria
-        self.publish(trayectoria)
+            # Construir la trayectoria global
+            trayectoria = nav.Path()
+            trayectoria.header.frame_id = "world_enu"
+            now = rospy.Time.now()
+            trayectoria.header.stamp = now
+
+            # Crear los puntos del camino a partir de los vectores
+            for x, y in zip(self.x_cord, self.y_cord):
+                y=136-y
+                x=x-98
+
+                pose = geo.PoseStamped()
+                pose.header.frame_id = "world_enu"
+                pose.pose.position.x = -y  
+                pose.pose.position.y = -x  
+                pose.pose.position.z = 0.0  # Coordenada Z fija
+                pose.pose.orientation.w = 1.0  # Sin rotación
+                trayectoria.poses.append(pose)
+
+            # Publicar la trayectoria
+            self.publish(trayectoria)
+
+            # Parar nodo
+            self.simulando=False
 
     def publish(self, datos):
         # Publicar los datos computados en el nodo
@@ -57,7 +222,7 @@ class PlanificadorGlobal:
 
     def run(self):
         # Mantener el nodo en ejecución
-        rate = rospy.Rate(10)  # 10 Hz
+        rate = rospy.Rate(1.0)  # 1 Hz
         while not rospy.is_shutdown():
             self.ejecutar_planificador_global()
             rate.sleep()

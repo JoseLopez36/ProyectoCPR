@@ -303,7 +303,6 @@ class ControladorPurePursuit:
         prev_x = path.poses[closest_idx].pose.position.x
         prev_y = path.poses[closest_idx].pose.position.y
 
-        # Si el vehículo ya está más cerca del final, ajustar si es necesario
         if closest_idx == len(path.poses) - 1:
             # Estamos en el último punto de la trayectoria
             return geo.Point(prev_x, prev_y, 0.0)
@@ -332,8 +331,10 @@ class ControladorPurePursuit:
             dist_acumulada += segment_length
             prev_x, prev_y = curr_x, curr_y
 
-        # 4. Si se recorrió todo el path y no se superó lookahead_dist, devolvemos el último punto para evitar índices fuera de rango.
-        return geo.Point(prev_x, prev_y, 0.0)
+        # 4. Si se recorrió todo el path y no se superó lookahead_dist, devolvemos el punto más cercano
+        x = path.poses[closest_idx].pose.position.x
+        y = path.poses[closest_idx].pose.position.y
+        return geo.Point(x, y, 0.0)
     
     def normalize_angle(self, angle):
         """ 
