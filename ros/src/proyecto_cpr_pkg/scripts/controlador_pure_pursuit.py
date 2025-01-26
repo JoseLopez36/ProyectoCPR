@@ -54,7 +54,7 @@ class ControladorPurePursuit:
         self.algo_params = AlgorithmParams(
             min_lookahead_dist = 1.5,  # [m] distancia mínima de lookahead
             max_lookahead_dist = 10.0, # [m] distancia máxima de lookahead
-            N = 50
+            N = 300
         )
 
         # Transform Listener
@@ -92,7 +92,7 @@ class ControladorPurePursuit:
 
     def path_callback(self, msg):
         # Extraer la información de la trayectoria recibida
-        if len(msg.poses) < 3:
+        if len(msg.poses) < 4:
             rospy.logwarn("ControladorPurePursuit: Camino recibido es demasiado corto")
             self.path = None
         else:
@@ -116,6 +116,8 @@ class ControladorPurePursuit:
             kappa_out (float): Valor de curvatura calculado (máxima o media según el modo).
         """
         # Verificar que el número de puntos sea válido
+        if not path:
+            return 0.0
         n_path_points = len(path.poses)
         if n_path_points < 3:
             return 0.0
@@ -499,7 +501,7 @@ class ControladorPurePursuit:
         # Crear un nuevo Path con los puntos recortados
         reduced_path = nav.Path()
         start_idx = max(closest_idx, 0)
-        end_idx   = min(closest_idx + self.algo_params.N, len(self.path.poses))
+        end_idx   = min(closest_idx + self.algo_params.N, len(self.path.poses) - 1)
         reduced_path.header = self.path.header
         reduced_path.poses  = self.path.poses[start_idx:end_idx]
 

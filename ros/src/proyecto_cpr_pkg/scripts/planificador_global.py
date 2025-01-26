@@ -78,6 +78,9 @@ class Nodo():
     def action(self,accion):
         i=self.posx
         j=self.posy
+        costo_extra = 1  # Costo base para movimientos ortogonales
+        if accion in ["d1", "d2", "d3", "d4"]:
+            costo_extra = 1.414  # sqrt(2) para movimientos diagonales
         if accion == "arriba":
             i+=1
         elif accion == "abajo":
@@ -102,7 +105,7 @@ class Nodo():
 
         if i < 0 or j < 0 or i >= ALTO_VENTANA // tam or j >= ANCHO_VENTANA // tam:
             return None  # Si alguna coordenada es negativa, retorna None
-        return i, j
+        return i, j, costo_extra
     def __repr__(self):
         return f"({self.posx}, {self.posy}, {self.coste_a_star})"
     
@@ -160,7 +163,7 @@ class PlanificadorGlobal:
 
         # Publicadores
         self.pub_trayectoria_global = rospy.Publisher(
-            '/trayectoria_global', 
+            '/trayectoria_local', 
             nav.Path,
             queue_size=1,
             latch=True
@@ -181,25 +184,26 @@ class PlanificadorGlobal:
             for a in actions:
                 result=nodo.action(a)
                 if result is not None:
-                    i,j=result
+                    i,j,costo_extra=result
                     vecino=self.nodos[i][j]
                     
                     if (i,j) not in self.visitados and vecino.costo==0:
                         self.visitados.add((i,j))
                         self.fronteras.añadir(vecino)
                         vecino.parent=nodo
-                        vecino.coste_andar=nodo.coste_andar+1
+                        vecino.coste_andar=nodo.coste_andar+costo_extra
         
         if self.Win:
             cont=0
             while (solucion_nodo.parent is not None):
                 self.x_cord.append(solucion_nodo.posx)
                 self.y_cord.append(solucion_nodo.posy)
-                self.x_cord=self.x_cord[::-1]
-                self.y_cord=self.y_cord[::-1]
                 solucion_nodo=solucion_nodo.parent                
-                
+
                 cont+=1
+            
+            self.x_cord=self.x_cord[::-1]
+            self.y_cord=self.y_cord[::-1]
             
             # Notificar
             rospy.loginfo(

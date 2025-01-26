@@ -27,7 +27,8 @@ class PlanificadorLocal:
         self.pub_trayectoria_local = rospy.Publisher(
             '/trayectoria_local', 
             nav.Path,
-            queue_size=5
+            queue_size=1,
+            latch=True
         )
 
         rospy.loginfo("Nodo de Planificador Local inicializado.")
@@ -58,7 +59,7 @@ class PlanificadorLocal:
 
     def run(self):
         # Mantener el nodo en ejecución
-        rate = rospy.Rate(10)  # 10 Hz
+        rate = rospy.Rate(1)  # 1 Hz
         while not rospy.is_shutdown():
             self.ejecutar_planificador_local()
             rate.sleep()

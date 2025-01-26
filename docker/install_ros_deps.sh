@@ -40,3 +40,5 @@ apt-get install -y gcc-8 g++-8
 apt-get install -y ros-$ROS_DISTRO-mavros* ros-$ROS_DISTRO-tf2-sensor-msgs ros-$ROS_DISTRO-tf2-geometry-msgs
 
 pip3 install catkin-tools
+
+pip3 install scipy
