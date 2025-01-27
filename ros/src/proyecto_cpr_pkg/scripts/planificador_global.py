@@ -12,7 +12,7 @@ import numpy as np
 import cv2
 
 # Variables globales
-win=(30,160) # 140 190 #20 98
+win=(20,155) # 140 190 #20 98
 
 image=r"/home/testuser/ProyectoCPR/ros/src/proyecto_cpr_pkg/config/mapa_bin.png"
 imagen = cv2.imread(image)
@@ -284,8 +284,8 @@ class PlanificadorGlobal:
 
                 pose = geo.PoseStamped()
                 pose.header.frame_id = "world_enu"
-                pose.pose.position.x = -y  
-                pose.pose.position.y = -x  
+                pose.pose.position.x = -y * 0.85  
+                pose.pose.position.y = -x * 0.85
                 pose.pose.position.z = 0.0  # Coordenada Z fija
                 pose.pose.orientation.w = 1.0  # Sin rotación
                 trayectoria.poses.append(pose)
@@ -293,7 +293,7 @@ class PlanificadorGlobal:
             # Suavizar esquinas
             trayectoria_suavizada = smooth_traj(
                 trayectoria,
-                factor_suavizado=0.1,  # Más suave
+                factor_suavizado=0.003,  # Más suave
                 densidad_puntos=10     # Más puntos para curvas detalladas
             )
 
