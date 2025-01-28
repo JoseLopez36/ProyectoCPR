@@ -73,7 +73,14 @@ source devel/setup.bash
 ```
 Nota: Asegúrate de ejecutar source devel/setup.bash cada vez que abras un nuevo terminal dentro del contenedor para que las configuraciones de tu workspace estén disponibles.
 
-### Paso 7. Configuración para usar RViz
+### Paso 7. Dependencias adicionales
+
+Instala dependencias adicionales de Python:
+```bash
+pip3 install scipy
+```
+
+### Paso 8. Configuración para usar RViz
 
 Para usar RViz en Windows, necesitas un servidor X. Se recomienda Xming:
 1. Descargar Xming y Xming-fonts de Public Domain Releases
