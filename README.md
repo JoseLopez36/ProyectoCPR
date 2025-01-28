@@ -105,7 +105,7 @@ Ejecuta los siguientes scripts:
 
 ```bash
 ~/ProyectoCPR/build_all.sh
-~/ProyectoCPR/run_all.sh lanzar_pure_pursuit.launch true
+~/ProyectoCPR/run_all.sh lanzar_planificador_global.launch true
 ```
 Puedes cambiar `true` por `false` para no lanzar RViz.
 
